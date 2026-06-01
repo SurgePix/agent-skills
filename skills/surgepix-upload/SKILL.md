@@ -5,33 +5,32 @@ description: Upload local files to SurgePix cloud storage and return a public HT
 
 # SurgePix Upload
 
-Upload a local file (image, PDF, video, etc.) to SurgePix storage and get back a public CDN URL.
+Upload a local file to SurgePix storage and get back a public CDN URL.
 
 ## When to use
 
 - User says "upload this file", "get a URL for this image", "上传", "传到线上"
 - Before calling any web API that needs a remote URL instead of a local path
-- User gives a local path and wants backend processing
 
 ## Prerequisites
 
 - Node.js >= 18
-- Network access to SurgePix API
-- `SURGEPIX_API_KEY` configured (see Setup below)
-
-## Setup
-
-Add to your project's env config (`.env`, `.claude/settings.local.json`, or shell export):
-
-```
-SURGEPIX_API_KEY=your-bearer-token-here
-SURGEPIX_BASE_URL=https://api-test.surgepix.ai/api   # optional
-SURGEPIX_UPLOAD_FOLDER=files                          # optional
-```
-
-The script auto-discovers config from `.env` and `settings.local.json` walking up from cwd.
+- `SURGEPIX_API_KEY` configured (see Step 0)
 
 ## Workflow
+
+### Step 0: Check environment (required)
+
+Before running upload, verify config:
+
+```bash
+node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
+```
+
+- **Exit 0** → proceed to Step 1
+- **Exit 1** → follow **surgepix-setup** skill to configure `.env`, then retry
+
+Do NOT check `$SURGEPIX_API_KEY` in shell — the script loads `.env` automatically.
 
 ### Step 1: Identify the file
 
@@ -41,12 +40,12 @@ The script auto-discovers config from `.env` and `settings.local.json` walking u
 ### Step 2: Run upload
 
 ```bash
-node "<skill-scripts-dir>/file_upload.mjs" "<absolute-file-path>"
+node "<skills-dir>/surgepix-upload/scripts/file_upload.mjs" "<absolute-file-path>"
 ```
 
 ### Step 3: Parse output
 
-**Success** (stdout, JSON):
+**Success** (stdout):
 
 ```json
 {"ok":true,"url":"https://...","filename":"photo.png","size":12345,"contentType":"image/png","existing":false}
@@ -58,24 +57,16 @@ node "<skill-scripts-dir>/file_upload.mjs" "<absolute-file-path>"
 {"ok":false,"error":"..."}
 ```
 
+If error is "API_KEY not found" → run surgepix-setup first.
+
 ### Step 4: Use the URL
 
 - Show the `url` to the user
 - Pass it to any API that needs a remote file URL
-- `"existing": true` means the file was already on server (MD5 dedup, instant)
-
-## Error handling
-
-| Error | Action |
-|-------|--------|
-| Token not found | Configure `SURGEPIX_API_KEY` in env |
-| File not found | Check the absolute path |
-| HTTP 401/403 | Token expired or invalid |
-| Network error | Check connectivity |
 
 ## Rules
 
+- ALWAYS run check_env before first use in a session
 - NEVER pass local paths to web APIs — upload first, use the returned URL
-- NEVER invent or guess a URL — only use `url` from script output
+- NEVER invent or guess a URL
 - NEVER echo auth tokens
-- Always use absolute file paths

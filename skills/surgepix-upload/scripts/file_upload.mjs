@@ -19,22 +19,16 @@
  */
 
 import { createHash } from "node:crypto";
-import { createReadStream, existsSync, readFileSync } from "node:fs";
+import { createReadStream } from "node:fs";
 import { open, stat } from "node:fs/promises";
-import { homedir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { discoverAndLoadEnv, loadConfig } from "../../surgepix-setup/scripts/env.mjs";
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-const DEFAULT_BASE_URL = "https://api-test.surgepix.ai/api";
-const DEFAULT_FOLDER = "files";
 
 /** @type {{ baseUrl: string, folder: string, apiKey: string }} */
-let config = {
-  baseUrl: DEFAULT_BASE_URL,
-  folder: DEFAULT_FOLDER,
-  apiKey: "",
-};
+let config = { baseUrl: "", folder: "", apiKey: "" };
 
 function fail(message) {
   const payload = { ok: false, error: message };
@@ -46,81 +40,8 @@ function succeed(result) {
   console.log(JSON.stringify({ ok: true, ...result }));
 }
 
-function applyEnvVars(vars) {
-  for (const [key, value] of Object.entries(vars)) {
-    if (value != null && value !== "" && process.env[key] === undefined) {
-      process.env[key] = String(value);
-    }
-  }
-}
-
-/** @param {string} content */
-function parseDotEnv(content) {
-  /** @type {Record<string, string>} */
-  const vars = {};
-  for (const line of content.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const normalized = trimmed.startsWith("export ")
-      ? trimmed.slice(7).trim()
-      : trimmed;
-    const eq = normalized.indexOf("=");
-    if (eq <= 0) continue;
-    const key = normalized.slice(0, eq).trim();
-    let value = normalized.slice(eq + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    vars[key] = value;
-  }
-  return vars;
-}
-
-/** @param {string} filePath */
-function loadDotEnvFile(filePath) {
-  if (!existsSync(filePath)) return;
-  applyEnvVars(parseDotEnv(readFileSync(filePath, "utf8")));
-}
-
-/** @param {string} filePath */
-function loadClaudeSettingsFile(filePath) {
-  if (!existsSync(filePath)) return;
-  try {
-    const data = JSON.parse(readFileSync(filePath, "utf8"));
-    if (data.env && typeof data.env === "object") {
-      applyEnvVars(data.env);
-    }
-  } catch {
-    // ignore invalid settings files
-  }
-}
-
-function discoverAndLoadEnv() {
-  let dir = process.cwd();
-  const visited = new Set();
-
-  while (dir && !visited.has(dir)) {
-    visited.add(dir);
-    loadDotEnvFile(path.join(dir, ".env"));
-    loadClaudeSettingsFile(path.join(dir, ".claude", "settings.local.json"));
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-
-  loadClaudeSettingsFile(path.join(homedir(), ".claude", "settings.local.json"));
-}
-
-function loadConfig() {
-  discoverAndLoadEnv();
-  config = {
-    baseUrl: process.env.SURGEPIX_BASE_URL ?? DEFAULT_BASE_URL,
-    folder: process.env.SURGEPIX_UPLOAD_FOLDER ?? DEFAULT_FOLDER,
-    apiKey: process.env.SURGEPIX_API_KEY ?? "",
-  };
+function refreshConfig() {
+  config = loadConfig();
 }
 
 const DEFAULT_USER_AGENT =
@@ -291,23 +212,21 @@ async function uploadFile(filePath) {
 }
 
 async function main() {
-  loadConfig();
+  refreshConfig();
 
   const filePath = process.argv[2];
 
   if (!filePath || filePath === "-h" || filePath === "--help") {
     console.error("Usage: node file_upload.mjs <file-path>");
     console.error("");
-    console.error("Env is auto-loaded from (first match wins, shell env takes priority):");
-    console.error("  - .env in cwd or parent dirs");
-    console.error("  - .claude/settings.local.json (project, walking up)");
-    console.error("  - ~/.claude/settings.local.json");
+    console.error("Env auto-loaded from .env (recommended), platform settings, or shell.");
+    console.error("Run: node ../surgepix-setup/scripts/check_env.mjs  to verify config.");
     process.exit(filePath ? 0 : 1);
   }
 
   if (!config.apiKey) {
     fail(
-      "SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json (env block)",
+      "SURGEPIX_API_KEY not found. Create .env with SURGEPIX_API_KEY=... or run surgepix-setup skill.",
     );
   }
 
@@ -335,4 +254,5 @@ export {
   isExistingFile,
   loadConfig,
   discoverAndLoadEnv,
+  refreshConfig,
 };

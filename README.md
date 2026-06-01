@@ -6,114 +6,113 @@ Cross-platform AI agent skills for SurgePix image processing. Works with Claude 
 
 | Skill | Triggers | Description |
 |-------|----------|-------------|
+| `surgepix-setup` | "setup surgepix", first use | Check & configure environment |
 | `surgepix-upload` | "upload", "get URL", "上传文件" | Local file → public URL |
-| `surgepix-remove-background` | "remove background", "去背景", "抠图" | Remove image background → transparent PNG |
+| `surgepix-remove-background` | "remove background", "去背景", "抠图" | Remove background → transparent PNG |
 
-## Install
+**Install all three together.** Setup must run before upload or remove-background.
 
-Clone the repo, then copy skill folders to your agent's skills directory:
+## Quick Start
 
 ```bash
 git clone https://github.com/SurgePix/agent-skills.git
 cd agent-skills
+
+# 1. Configure (copy example, fill in your key)
+cp .env.example .env
+# edit .env → set SURGEPIX_API_KEY
+
+# 2. Verify
+node surgepix-setup/scripts/check_env.mjs
+
+# 3. Install skills to your agent (see below)
 ```
+
+## Configure (portable)
+
+All scripts load config from **`.env`** — works on every agent, no platform-specific setup required.
+
+```bash
+cp .env.example .env
+# edit .env:
+#   SURGEPIX_API_KEY=your-token-here
+#   SURGEPIX_BASE_URL=https://api-test.surgepix.ai/api
+```
+
+Verify:
+
+```bash
+node surgepix-setup/scripts/check_env.mjs
+# → {"ok":true,"configured":true,...}  exit 0
+```
+
+Optional fallbacks (scripts auto-detect): `.claude/settings.local.json`, shell `export`.
+
+## Install skills
+
+Copy all three skill folders to your agent's skills directory:
 
 ### Claude Code
 
 ```bash
-cp -r surgepix-upload ~/.claude/skills/
-cp -r surgepix-remove-background ~/.claude/skills/
+cp -r surgepix-* ~/.claude/skills/
+# or project-level:
+cp -r surgepix-* .claude/skills/
 ```
 
-Or project-level:
+### Codex CLI
 
 ```bash
-cp -r surgepix-upload .claude/skills/
-cp -r surgepix-remove-background .claude/skills/
-```
-
-### OpenAI Codex CLI
-
-```bash
-cp -r surgepix-upload .agents/skills/
-cp -r surgepix-remove-background .agents/skills/
+cp -r surgepix-* .agents/skills/
 ```
 
 ### Cursor
 
 ```bash
-cp -r surgepix-upload .cursor/skills/
-cp -r surgepix-remove-background .cursor/skills/
+cp -r surgepix-* .cursor/skills/
 ```
 
-### Gemini CLI
+### Gemini CLI / OpenClaw
 
 ```bash
-cp -r surgepix-upload ~/.gemini/skills/
-cp -r surgepix-remove-background ~/.gemini/skills/
+cp -r surgepix-* ~/.gemini/skills/   # or ~/.openclaw/skills/
 ```
 
-### OpenClaw
-
-```bash
-cp -r surgepix-upload ~/.openclaw/skills/
-cp -r surgepix-remove-background ~/.openclaw/skills/
-```
-
-## Configure
-
-Copy the example config and fill in your token:
-
-```bash
-cp settings.local.example.json ~/.claude/settings.local.json
-# Then edit and replace "your-bearer-token-here" with your actual token
-```
-
-Or set via `.env` (works with all platforms):
+## Usage flow
 
 ```
-SURGEPIX_API_KEY=your-token-here
-SURGEPIX_BASE_URL=https://api-test.surgepix.ai/api
+User request (upload / remove-background)
+        │
+        ▼
+  check_env.mjs ── configured? ── yes ──► run skill script
+        │
+        no
+        ▼
+  surgepix-setup ── write .env ──► check_env.mjs ──► run skill script
 ```
 
-The scripts auto-discover config from `.env` and `settings.local.json`, walking up from cwd.
+## Structure
 
-### Environment Variables
+```
+surgepix-setup/
+surgepix-upload/
+surgepix-remove-background/
+```
+
+## Environment Variables
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SURGEPIX_API_KEY` | Yes | — | Bearer token |
 | `SURGEPIX_BASE_URL` | No | `https://api-test.surgepix.ai/api` | API base URL |
-| `SURGEPIX_UPLOAD_FOLDER` | No | `files` | Upload folder on server |
-| `SURGEPIX_USER_AGENT` | No | Chrome UA | Custom User-Agent header |
-
-## Structure
-
-```
-agent-skills/
-├── README.md
-├── settings.local.example.json
-├── surgepix-upload/
-│   ├── SKILL.md
-│   └── scripts/
-│       └── file_upload.mjs
-└── surgepix-remove-background/
-    ├── SKILL.md
-    └── scripts/
-        └── remove_background.mjs
-```
+| `SURGEPIX_UPLOAD_FOLDER` | No | `files` | Upload folder |
 
 ## Manual Test
 
 ```bash
-# Upload a file
+node surgepix-setup/scripts/check_env.mjs
 node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
-
-# Remove background (async, polls until done)
 node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png
-
-# Remove background (sync, waits for result)
-node surgepix-remove-background/scripts/remove_background.mjs "https://..." --sync
 ```
 
 ## Requirements

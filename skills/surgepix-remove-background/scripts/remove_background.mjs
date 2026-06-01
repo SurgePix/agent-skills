@@ -19,11 +19,12 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { discoverAndLoadEnv, loadConfig } from "../../surgepix-setup/scripts/env.mjs";
 
-// 复用 upload 脚本的能力
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
-const { uploadFile, loadConfig, discoverAndLoadEnv } = await import(uploadScript);
+const uploadModule = await import(uploadScript);
+const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 
 // ============================================================
 // 常量
@@ -99,6 +100,7 @@ async function uploadLocalFile(imagePath) {
   if (!existsSync(resolved)) {
     throw new Error(`文件不存在: ${resolved}`);
   }
+  refreshUploadConfig();
   console.error(`[upload] uploading ${resolved}`);
   const result = await uploadFile(resolved);
   if (!result.url) {
