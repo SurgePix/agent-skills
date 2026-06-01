@@ -66,6 +66,12 @@ cp -r surgepix-* .claude/skills/
 cp -r surgepix-* .agents/skills/
 ```
 
+### OpenClaw
+
+```bash
+cp -r surgepix-* ~/.openclaw/skills/
+```
+
 ### Cursor
 
 ```bash
