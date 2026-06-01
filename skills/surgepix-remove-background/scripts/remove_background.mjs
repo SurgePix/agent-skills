@@ -18,12 +18,12 @@
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL} from "node:url";
 import { discoverAndLoadEnv, loadConfig } from "../../surgepix-setup/scripts/env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
-const uploadModule = await import(uploadScript);
+const uploadModule = await import(pathToFileURL(uploadScript).href);
 const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 
 // ============================================================
