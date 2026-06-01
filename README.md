@@ -7,8 +7,8 @@ Cross-platform AI agent skills for SurgePix image processing. Works with Claude 
 | Skill | Triggers | Description |
 |-------|----------|-------------|
 | `surgepix-setup` | "setup surgepix", first use | Check & configure environment |
-| `surgepix-upload` | "upload", "get URL", "上传文件" | Local file → public URL |
-| `surgepix-remove-background` | "remove background", "去背景", "抠图" | Remove background → transparent PNG |
+| `surgepix-upload` | "upload", "get URL" | Local file → public URL |
+| `surgepix-remove-background` | "remove background"| Remove background → transparent PNG |
 
 **Install all three together.** Setup must run before upload or remove-background.
 
