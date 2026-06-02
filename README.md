@@ -1,19 +1,38 @@
-# SurgePix Agent Skills
+# SurgePix Agent Skills — AI-Powered Image Processing for Agents
 
-Cross-platform AI agent skills for SurgePix image processing. Works with Claude Code, Codex CLI, Cursor, Gemini CLI, OpenClaw, and any agent supporting the [SKILL.md](https://agentskills.io) standard.
+SurgePix is an AI image processing platform that lets you remove backgrounds, upload files, and automate image workflows — all from your AI agent or CLI.
 
-## Skills
+This repository contains the official SurgePix Agent Skills for AI coding environments and agentic platforms. Works with Claude Code, Codex CLI, Cursor, Gemini CLI, OpenClaw, and any agent supporting the [SKILL.md](https://agentskills.io) standard.
+
+## What Is SurgePix?
+
+SurgePix provides an AI image processing API and a set of developer-facing agent skills that let autonomous agents and human developers process images programmatically.
+
+Core capabilities:
+
+- Remove image backgrounds → transparent PNG output
+- Upload local files to cloud storage → public HTTPS URL
+- Async task management with polling or synchronous wait
+- Session-based iteration — refine results across multiple calls
+
+## SurgePix Agent Skills
+
+The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenClaw, and similar agentic systems) structured access to SurgePix's image processing API as reusable, composable skills.
+
+### What the Skills Do
 
 | Skill | Triggers | Description |
 |-------|----------|-------------|
 | `surgepix-setup` | "setup surgepix", first use | Check & configure environment |
-| `surgepix-upload` | "upload", "get URL" | Local file → public URL |
-| `surgepix-remove-background` | "remove background" | Remove background → transparent PNG |
+| `surgepix-upload` | "upload", "get URL", "上传文件" | Upload local file → public HTTPS URL |
+| `surgepix-remove-background` | "remove background", "抠图", "去背景" | Remove background → transparent PNG |
 | `surgepix-query-task` | "check task", "poll task", "查任务" | Query/poll async task status |
 
-**Install all skills together.** Setup must run before other skills.
+> Background removal typically takes 5–15 seconds. The skill handles polling automatically by default; pass `--sync` (noWait=true) to wait for the result in a single call.
 
-## Quick Start
+### Setup
+
+**Requirement:** Set the `SURGEPIX_API_KEY` environment variable. Get your key at [surgepix.ai](https://surgepix.ai).
 
 ```bash
 git clone https://github.com/SurgePix/agent-skills.git
@@ -26,66 +45,49 @@ cp .env.example .env
 # 2. Verify
 node surgepix-setup/scripts/check_env.mjs
 
-# 3. Install skills to your agent (see below)
-```
-
-## Configure (portable)
-
-All scripts load config from **`.env`** — works on every agent, no platform-specific setup required.
-
-```bash
-cp .env.example .env
-# edit .env:
-#   SURGEPIX_API_KEY=your-token-here
-#   SURGEPIX_BASE_URL=https://api.surgepix.ai/api
-```
-
-Verify:
-
-```bash
-node surgepix-setup/scripts/check_env.mjs
-# → {"ok":true,"configured":true,...}  exit 0
+# 3. Install skills to your agent (see Available Platforms below)
 ```
 
 Optional fallbacks (scripts auto-detect): `.claude/settings.local.json`, shell `export`.
 
-## Install skills
+### Usage Examples
 
-Copy all three skill folders to your agent's skills directory:
-
-### Claude Code
+Remove background from an image:
 
 ```bash
-cp -r surgepix-* ~/.claude/skills/
-# or project-level:
-cp -r surgepix-* .claude/skills/
+node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png
 ```
 
-### Codex CLI
+Remove background (synchronous, wait for result):
 
 ```bash
-cp -r surgepix-* .agents/skills/
+node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png --sync
 ```
 
-### OpenClaw
+Upload a file and get a public URL:
 
 ```bash
-cp -r surgepix-* ~/.openclaw/skills/
+node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
 ```
 
-### Cursor
+Check task status:
 
 ```bash
-cp -r surgepix-* .cursor/skills/
+node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
 ```
 
-### Gemini CLI / OpenClaw
+### Available Platforms
 
-```bash
-cp -r surgepix-* ~/.gemini/skills/   # or ~/.openclaw/skills/
-```
+The SurgePix Agent Skills are available on:
 
-## Usage flow
+- **Claude Code** — `cp -r surgepix-* ~/.claude/skills/` (or project-level `.claude/skills/`)
+- **Codex CLI** — `cp -r surgepix-* .agents/skills/`
+- **Cursor** — `cp -r surgepix-* .cursor/skills/`
+- **Gemini CLI** — `cp -r surgepix-* ~/.gemini/skills/`
+- **OpenClaw** — `cp -r surgepix-* ~/.openclaw/skills/`
+- This repository — clone and use directly in any Node.js-based agent environment
+
+## Usage Flow
 
 ```
 User request (upload / remove-background)
@@ -98,15 +100,6 @@ User request (upload / remove-background)
   surgepix-setup ── write .env ──► check_env.mjs ──► run skill script
 ```
 
-## Structure
-
-```
-surgepix-setup/
-surgepix-upload/
-surgepix-remove-background/
-surgepix-query-task/
-```
-
 ## Environment Variables
 
 | Variable | Required | Default | Description |
@@ -115,14 +108,52 @@ surgepix-query-task/
 | `SURGEPIX_BASE_URL` | No | `https://api.surgepix.ai/api` | API base URL |
 | `SURGEPIX_UPLOAD_FOLDER` | No | `files` | Upload folder |
 
-## Manual Test
+## Why Use SurgePix for AI Agents?
 
-```bash
-node surgepix-setup/scripts/check_env.mjs
-node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
-node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png
-node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
-```
+| Feature | Detail |
+|---------|--------|
+| Output format | Transparent `.png` (background removal) |
+| Input types | Local file path or remote URL |
+| Supported formats | JPEG, PNG, WebP, GIF |
+| Async task handling | ✅ `taskId` polling or synchronous wait (`noWait=true`) |
+| Session support | ✅ Group iterations under one session |
+| NSFW detection | ✅ Automatic content safety check on upload |
+| Agent Skill support | ✅ Claude Code, Codex, Cursor, Gemini, OpenClaw |
+| REST API | ✅ Full API reference available |
+
+## Common Use Cases
+
+**E-commerce:** Batch remove backgrounds from product photos for clean catalog listings.
+
+**Design workflows:** Let an AI agent extract subjects from images, produce transparent PNGs, and compose them into new layouts — no manual editing required.
+
+**Content creation:** Remove backgrounds for social media graphics, thumbnails, and marketing assets on demand.
+
+**Agentic pipelines:** Chain upload → remove-background → download in a single automated workflow, triggered by natural language.
+
+## API & Documentation
+
+- SurgePix API docs: [surgepix.ai/blog/developer-guides/api-keys-reference](https://surgepix.ai/blog/developer-guides/api-keys-reference)
+- Agent Skills repository: [github.com/SurgePix/agent-skills](https://github.com/SurgePix/agent-skills)
+- Get an API key: [surgepix.ai](https://surgepix.ai)
+- Website: [surgepix.ai](https://surgepix.ai)
+
+## Frequently Asked Questions
+
+**What AI agents does SurgePix work with?**
+Claude Code, Codex CLI, Cursor, Gemini CLI, OpenClaw, and any agent that supports the SKILL.md standard.
+
+**How long does background removal take?**
+Typically 5–15 seconds. The skill handles async polling internally so you don't have to wait manually. Use `--sync` or `noWait=true` for single-call synchronous mode.
+
+**What file format does SurgePix output?**
+Transparent `.png` files for background removal results.
+
+**Can I iterate on a result?**
+Yes. Pass the `sessionId` from your first response into subsequent calls to group iterations in a single session history.
+
+**What happens if my image contains sensitive content?**
+Uploaded images go through automatic NSFW detection. Sensitive content will be rejected with an `error.file.sensitive_content` error.
 
 ## Requirements
 
@@ -132,3 +163,7 @@ node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
 ## License
 
 MIT
+
+---
+
+SurgePix — AI image processing for developers, agents, and teams. [surgepix.ai](https://surgepix.ai)
