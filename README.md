@@ -37,7 +37,7 @@ All scripts load config from **`.env`** — works on every agent, no platform-sp
 cp .env.example .env
 # edit .env:
 #   SURGEPIX_API_KEY=your-token-here
-#   SURGEPIX_BASE_URL=https://api-test.surgepix.ai/api
+#   SURGEPIX_BASE_URL=https://api.surgepix.ai/api
 ```
 
 Verify:
@@ -112,7 +112,7 @@ surgepix-query-task/
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SURGEPIX_API_KEY` | Yes | — | Bearer token |
-| `SURGEPIX_BASE_URL` | No | `https://api-test.surgepix.ai/api` | API base URL |
+| `SURGEPIX_BASE_URL` | No | `https://api.surgepix.ai/api` | API base URL |
 | `SURGEPIX_UPLOAD_FOLDER` | No | `files` | Upload folder |
 
 ## Manual Test
