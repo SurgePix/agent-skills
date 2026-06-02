@@ -8,9 +8,10 @@ Cross-platform AI agent skills for SurgePix image processing. Works with Claude 
 |-------|----------|-------------|
 | `surgepix-setup` | "setup surgepix", first use | Check & configure environment |
 | `surgepix-upload` | "upload", "get URL" | Local file → public URL |
-| `surgepix-remove-background` | "remove background"| Remove background → transparent PNG |
+| `surgepix-remove-background` | "remove background" | Remove background → transparent PNG |
+| `surgepix-query-task` | "check task", "poll task", "查任务" | Query/poll async task status |
 
-**Install all three together.** Setup must run before upload or remove-background.
+**Install all skills together.** Setup must run before other skills.
 
 ## Quick Start
 
@@ -103,6 +104,7 @@ User request (upload / remove-background)
 surgepix-setup/
 surgepix-upload/
 surgepix-remove-background/
+surgepix-query-task/
 ```
 
 ## Environment Variables
@@ -119,6 +121,7 @@ surgepix-remove-background/
 node surgepix-setup/scripts/check_env.mjs
 node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
 node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png
+node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
 ```
 
 ## Requirements
