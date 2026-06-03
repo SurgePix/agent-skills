@@ -14,7 +14,7 @@
  *
  * Keys:
  *   SURGEPIX_API_KEY    (required) Bearer token
- *   SURGEPIX_BASE_URL      (optional) default https://api-test.surgepix.ai/api
+ *   SURGEPIX_BASE_URL      (optional) default https://api.surgepix.ai/api
  *   SURGEPIX_UPLOAD_FOLDER (optional) default files
  */
 
