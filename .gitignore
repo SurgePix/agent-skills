@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Env files
+.env
+
+# log
+logs/
+
+# npm
+node_modules/
+
+# uv 相关
+.python-version
+/cpython-*/
+# uv.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

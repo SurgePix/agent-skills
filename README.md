@@ -32,6 +32,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 
 ### Install
 
+Use `npx skills` to install (recommended):
 ```bash
 npx skills add SurgePix/agent-skills
 ```
@@ -42,6 +43,15 @@ Or clone manually:
 git clone https://github.com/SurgePix/agent-skills.git
 cd agent-skills
 ```
+
+The SurgePix Agent Skills are available on:
+
+- **Claude Code** — `cp -r surgepix-* ~/.claude/skills/` (or project-level `.claude/skills/`)
+- **Codex CLI** — `cp -r surgepix-* .agents/skills/`
+- **Cursor** — `cp -r surgepix-* .cursor/skills/`
+- **Gemini CLI** — `cp -r surgepix-* ~/.gemini/skills/`
+- **OpenClaw** — `cp -r surgepix-* ~/.openclaw/skills/`
+
 
 ### Setup
 
@@ -83,17 +93,6 @@ Check task status:
 ```bash
 node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
 ```
-
-### Available Platforms
-
-The SurgePix Agent Skills are available on:
-
-- **Claude Code** — `cp -r surgepix-* ~/.claude/skills/` (or project-level `.claude/skills/`)
-- **Codex CLI** — `cp -r surgepix-* .agents/skills/`
-- **Cursor** — `cp -r surgepix-* .cursor/skills/`
-- **Gemini CLI** — `cp -r surgepix-* ~/.gemini/skills/`
-- **OpenClaw** — `cp -r surgepix-* ~/.openclaw/skills/`
-- This repository — clone and use directly in any Node.js-based agent environment
 
 ## Usage Flow
 
