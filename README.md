@@ -30,11 +30,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 
 > Background removal typically takes 5–15 seconds. The skill handles polling automatically by default; pass `--sync` (noWait=true) to wait for the result in a single call.
 
-### Setup
-
-**Requirement:** Set the `SURGEPIX_API_KEY` environment variable. Get your key at [surgepix.ai](https://surgepix.ai).
-
-Install via npx:
+### Install
 
 ```bash
 npx skills add SurgePix/agent-skills
@@ -45,15 +41,19 @@ Or clone manually:
 ```bash
 git clone https://github.com/SurgePix/agent-skills.git
 cd agent-skills
+```
 
+### Setup
+
+**Requirement:** Set the `SURGEPIX_API_KEY` environment variable. Get your key at [surgepix.ai](https://surgepix.ai).
+
+```bash
 # 1. Configure (copy example, fill in your key)
 cp .env.example .env
 # edit .env → set SURGEPIX_API_KEY
 
 # 2. Verify
 node surgepix-setup/scripts/check_env.mjs
-
-# 3. Install skills to your agent (see Available Platforms below)
 ```
 
 Optional fallbacks (scripts auto-detect): `.claude/settings.local.json`, shell `export`.
