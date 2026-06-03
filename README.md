@@ -34,6 +34,14 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 
 **Requirement:** Set the `SURGEPIX_API_KEY` environment variable. Get your key at [surgepix.ai](https://surgepix.ai).
 
+Install via npx:
+
+```bash
+npx skills add SurgePix/agent-skills
+```
+
+Or clone manually:
+
 ```bash
 git clone https://github.com/SurgePix/agent-skills.git
 cd agent-skills
