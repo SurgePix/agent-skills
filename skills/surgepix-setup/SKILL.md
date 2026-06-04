@@ -57,7 +57,7 @@ After user provides the key, write `.env` in the project root:
 ```bash
 cat > .env << 'EOF'
 SURGEPIX_API_KEY=<user-provided-key>
-SURGEPIX_BASE_URL=https://api-test.surgepix.ai/api
+SURGEPIX_BASE_URL=https://api.surgepix.ai/api
 SURGEPIX_UPLOAD_FOLDER=files
 EOF
 ```
