@@ -4,11 +4,13 @@
  *
  * 流程:
  *   1. 本地图片 → 上传拿到 fileUrl（可选，直接传 URL 则跳过）
- *   2. POST /tasks/remove-background
- *   3. 轮询 GET /tasks/{taskId} 直到 succeeded / failed
+ *   2. POST /tasks/remove-background   (始终异步提交：API noWait=false，立即返回 taskId)
+ *   3. 根据 --nowait 决定行为:
+ *      - --nowait false（默认，同步）：脚本内部轮询 GET /tasks/{taskId} 直到 succeeded / failed
+ *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
  *
  * 用法:
- *   node remove_background.mjs <image-path-or-url> [--sync] [--session-id <id>]
+ *   node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
@@ -114,12 +116,13 @@ async function uploadLocalFile(imagePath) {
 // 去背景 API
 // ============================================================
 
-async function removeBackground(fileUrl, { sessionId, noWait = false } = {}) {
-  const body = { fileUrl, noWait };
+// 始终异步提交：去背景接口 noWait=false 表示立即返回 taskId（异步），由脚本/Agent 后续轮询
+async function removeBackground(fileUrl, { sessionId } = {}) {
+  const body = { fileUrl, noWait: false };
   if (sessionId != null) {
     body.sessionId = sessionId;
   }
-  console.error(`[remove-background] fileUrl=${fileUrl} noWait=${noWait}`);
+  console.error(`[remove-background] fileUrl=${fileUrl} (async submit, noWait=false)`);
   return apiRequest("POST", "/tasks/remove-background", { body });
 }
 
@@ -160,6 +163,21 @@ function printResult(data) {
   console.log(JSON.stringify(output));
 }
 
+// --nowait true：任务已异步提交，立即返回任务信息并引导 Agent 用 query-task 查询
+function printAsyncResult(data) {
+  const taskId = data.taskId;
+  const output = {
+    ok: true,
+    async: true,
+    taskId,
+    sessionId: data.sessionId ?? null,
+    progress: data.progress ?? "processing",
+    download: data.taskResult?.download ?? null,
+    hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态，例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId} --poll`,
+  };
+  console.log(JSON.stringify(output));
+}
+
 function fail(message) {
   console.error(JSON.stringify({ ok: false, error: message }));
   process.exit(1);
@@ -171,19 +189,25 @@ function fail(message) {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { input: null, sync: false, sessionId: null };
+  const parsed = { input: null, nowait: false, sessionId: null };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--sync") {
-      parsed.sync = true;
+    if (args[i] === "--nowait") {
+      const next = args[i + 1];
+      if (next === "true" || next === "false") {
+        parsed.nowait = next === "true";
+        i++;
+      } else {
+        parsed.nowait = true;
+      }
     } else if (args[i] === "--session-id" && i + 1 < args.length) {
       parsed.sessionId = Number(args[++i]);
     } else if (args[i] === "-h" || args[i] === "--help") {
-      console.error("Usage: node remove_background.mjs <image-path-or-url> [--sync] [--session-id <id>]");
+      console.error("Usage: node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]");
       console.error("");
-      console.error("  <image-path-or-url>  本地图片路径 或 已上传的 URL");
-      console.error("  --sync               同步模式，等待结果直接返回");
-      console.error("  --session-id <id>    会话 ID，迭代时传入");
+      console.error("  <image-path-or-url>   本地图片路径 或 已上传的 URL");
+      console.error("  --nowait <true|false> false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
+      console.error("  --session-id <id>     会话 ID，迭代时传入");
       process.exit(0);
     } else if (!parsed.input) {
       parsed.input = args[i];
@@ -199,7 +223,7 @@ async function main() {
     fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
   }
 
-  const { input, sync, sessionId } = parseArgs();
+  const { input, nowait, sessionId } = parseArgs();
   if (!input) {
     fail("缺少参数: 请提供图片路径或 URL");
   }
@@ -212,20 +236,21 @@ async function main() {
       fileUrl = await uploadLocalFile(input);
     }
 
-    const data = await removeBackground(fileUrl, { sessionId, noWait: sync });
-
-    if (sync) {
-      printResult(data);
-      if (data.progress !== "succeeded") process.exit(1);
-      return;
-    }
+    const data = await removeBackground(fileUrl, { sessionId });
 
     const taskId = data.taskId;
     if (!taskId) {
-      fail(`异步模式未返回 taskId: ${JSON.stringify(data)}`);
+      fail(`未返回 taskId: ${JSON.stringify(data)}`);
     }
 
-    console.error(`[async] 开始轮询 taskId=${taskId}`);
+    if (nowait) {
+      // 异步模式：立即返回任务信息，交由 Agent 用 query-task 技能后续查询
+      console.error(`[nowait] 任务已提交，taskId=${taskId}，跳过轮询`);
+      printAsyncResult(data);
+      return;
+    }
+
+    console.error(`[sync] 开始轮询 taskId=${taskId}`);
     const final = await pollUntilDone(String(taskId));
     printResult(final);
     if (final.progress !== "succeeded") process.exit(1);

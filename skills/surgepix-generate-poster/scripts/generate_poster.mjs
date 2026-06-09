@@ -4,14 +4,16 @@
  *
  * 流程:
  *   1. 本地参考图 → 上传拿到 URL（可选，直接传 URL 则跳过）
- *   2. POST /tasks/generate-poster   (内部 noWait=true，异步提交)
- *   3. 轮询 GET /tasks/{taskId} 直到 succeeded / failed
+ *   2. POST /tasks/generate-poster   (始终异步提交：API noWait=true，立即返回 taskId)
+ *   3. 根据 --nowait 决定行为:
+ *      - --nowait false（默认，同步）：脚本内部轮询 GET /tasks/{taskId} 直到 succeeded / failed
+ *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
  *
  * 用法:
  *   node generate_poster.mjs --event-name <text> --date <text> --venue <text>
  *                            [--prompt <text>] [--description <text>] [--style <name>]
  *                            [--size <1080x1920>] [--reference <path-or-url> ...]
- *                            [--session-id <id>]
+ *                            [--session-id <id>] [--nowait <true|false>]
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
@@ -183,6 +185,21 @@ function printResult(data) {
   console.log(JSON.stringify(output));
 }
 
+// --nowait true：任务已异步提交，立即返回任务信息并引导 Agent 用 query-task 查询
+function printAsyncResult(data) {
+  const taskId = data.taskId;
+  const output = {
+    ok: true,
+    async: true,
+    taskId,
+    sessionId: data.sessionId ?? null,
+    progress: data.progress ?? "processing",
+    download: data.taskResult?.download ?? null,
+    hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态，例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId} --poll`,
+  };
+  console.log(JSON.stringify(output));
+}
+
 function fail(message) {
   console.error(JSON.stringify({ ok: false, error: message }));
   process.exit(1);
@@ -204,11 +221,20 @@ function parseArgs() {
     size: null,
     referenceImages: [],
     sessionId: null,
+    nowait: false,
   };
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === "--event-name" && i + 1 < args.length) {
+    if (arg === "--nowait") {
+      const next = args[i + 1];
+      if (next === "true" || next === "false") {
+        parsed.nowait = next === "true";
+        i++;
+      } else {
+        parsed.nowait = true;
+      }
+    } else if (arg === "--event-name" && i + 1 < args.length) {
       parsed.eventName = args[++i];
     } else if (arg === "--date" && i + 1 < args.length) {
       parsed.date = args[++i];
@@ -229,7 +255,7 @@ function parseArgs() {
     } else if (arg === "-h" || arg === "--help") {
       console.error("Usage: node generate_poster.mjs --event-name <text> --date <text> --venue <text> \\");
       console.error("         [--prompt <text>] [--description <text>] [--style <name>] [--size <1080x1920>] \\");
-      console.error("         [--reference <path-or-url> ...] [--session-id <id>]");
+      console.error("         [--reference <path-or-url> ...] [--session-id <id>] [--nowait <true|false>]");
       console.error("");
       console.error("  --event-name <text>      海报主标题（必填）");
       console.error("  --date <text>            活动日期时间（必填），如 2026-06-15 19:00");
@@ -240,6 +266,7 @@ function parseArgs() {
       console.error("  --size <WxH>             输出尺寸，默认 1080x1920");
       console.error("  --reference <path-or-url> 参考图（本地路径自动上传，可重复传多个）");
       console.error("  --session-id <id>        会话 ID，迭代调整时传入");
+      console.error("  --nowait <true|false>    false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
       process.exit(0);
     }
   }
@@ -270,6 +297,7 @@ async function main() {
     size,
     referenceImages,
     sessionId,
+    nowait,
   } = parseArgs();
 
   if (!eventName || !date || !venue) {
@@ -300,7 +328,14 @@ async function main() {
       fail(`未返回 taskId: ${JSON.stringify(data)}`);
     }
 
-    console.error(`[async] 开始轮询 taskId=${taskId}`);
+    if (nowait) {
+      // 异步模式：立即返回任务信息，交由 Agent 用 query-task 技能后续查询
+      console.error(`[nowait] 任务已提交，taskId=${taskId}，跳过轮询`);
+      printAsyncResult(data);
+      return;
+    }
+
+    console.error(`[sync] 开始轮询 taskId=${taskId}`);
     const final = await pollUntilDone(String(taskId));
     printResult(final);
     if (final.progress !== "succeeded") process.exit(1);
