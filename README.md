@@ -93,7 +93,7 @@ node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
 Check task status:
 
 ```bash
-node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
+node surgepix-query-task/scripts/query_task.mjs task_abc123
 ```
 
 ## Usage Flow

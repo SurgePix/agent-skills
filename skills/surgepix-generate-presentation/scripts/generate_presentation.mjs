@@ -182,7 +182,7 @@ function printAsyncResult(data) {
     sessionId: data.sessionId ?? null,
     progress: data.progress ?? "processing",
     download: data.taskResult?.download ?? null,
-    hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态，例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId} --poll`,
+    hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态（单次查询，未完成则稍后再查），例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId}`,
   };
   console.log(JSON.stringify(output));
 }
