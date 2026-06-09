@@ -10,8 +10,8 @@
  *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
  *
  * 用法:
- *   node generate_presentation.mjs [--prompt <text>] [--outline <path-or-url> ...]
- *                                  [--n <5-30>] [--aspect-ratio <16:9>] [--style <name>]
+ *   node generate_presentation.mjs --n <5-30> [--prompt <text>] [--outline <path-or-url> ...]
+ *                                  [--aspect-ratio <16:9>] [--style <name>]
  *                                  [--language <zh|en|ja>] [--session-id <id>] [--nowait <true|false>]
  *
  * Env (auto-loaded):
@@ -234,13 +234,13 @@ function parseArgs() {
     } else if (arg === "--session-id" && i + 1 < args.length) {
       parsed.sessionId = Number(args[++i]);
     } else if (arg === "-h" || arg === "--help") {
-      console.error("Usage: node generate_presentation.mjs [--prompt <text>] [--outline <path-or-url> ...] \\");
-      console.error("         [--n <5-30>] [--aspect-ratio <16:9>] [--style <name>] [--language <zh|en|ja>] \\");
+      console.error("Usage: node generate_presentation.mjs --n <5-30> [--prompt <text>] [--outline <path-or-url> ...] \\");
+      console.error("         [--aspect-ratio <16:9>] [--style <name>] [--language <zh|en|ja>] \\");
       console.error("         [--session-id <id>] [--nowait <true|false>]");
       console.error("");
       console.error("  --prompt <text>         演示文稿主题、目的和核心要点");
       console.error("  --outline <path-or-url> 大纲文档（本地路径自动上传，可重复传多个）");
-      console.error("  --n <5-30>              幻灯片数量，默认 10");
+      console.error("  --n <5-30>              幻灯片数量（必填），5-30 之间的整数");
       console.error("  --aspect-ratio <ratio>  画面比例，默认 16:9");
       console.error("  --style <name>          版式预设 modern/corporate/creative/minimal/tech");
       console.error("  --language <code>       输出语言 zh/en/ja");
@@ -253,7 +253,9 @@ function parseArgs() {
 }
 
 function validateN(n) {
-  if (n == null) return;
+  if (n == null) {
+    fail("缺少必填参数: --n（幻灯片数量，5-30 之间的整数）");
+  }
   if (!Number.isInteger(n) || n < 5 || n > 30) {
     fail(`--n 必须是 5-30 之间的整数，收到: ${n}`);
   }

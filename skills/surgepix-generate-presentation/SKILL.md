@@ -104,11 +104,11 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 
 ### Step 1: Gather inputs
 
-At least one of `--prompt` or `--outline` is required.
+`--n` is required, and at least one of `--prompt` or `--outline` must also be provided.
    - **Prompt** (optional): text describing the presentation topic, purpose, and key points.
    - **Outline** (optional): local file path or document URL. Script uploads automatically.
      Supported formats: `doc`, `docx`, `pdf`, `txt`, `md`, `html`, `pptx` — max **50MB**.
-   - **Slide count** (optional, default `10`, range `5–30`): use `--n`
+   - **Slide count** (**required**, range `5–30`): use `--n` (integer)
    - **Aspect ratio** (optional, default `16:9`): `16:9` (widescreen) / `4:3` (standard)
    - **Style** (optional): layout and typography preset. Choose from: `modern` / `corporate` / `creative` / `minimal` / `tech`. Use as a quick shorthand for visual direction; omit if `--prompt` already describes the style. See **Preset Styles** section below for detailed descriptions.
    - **Language** (optional, default: auto-detect from user's input language): `zh` / `en` / `ja`
@@ -121,16 +121,16 @@ At least one of `--prompt` or `--outline` is required.
 
 ```bash
 node "<skills-dir>/surgepix-generate-presentation/scripts/generate_presentation.mjs" \
-  [--prompt "<text>"] [--outline "<path-or-url>" ...] \
-  [--n <5-30>] [--aspect-ratio <16:9>] [--style <name>] \
+  --n <5-30> [--prompt "<text>"] [--outline "<path-or-url>" ...] \
+  [--aspect-ratio <16:9>] [--style <name>] \
   [--language <zh|en|ja>] [--session-id <id>] [--nowait <true|false>]
 ```
 
 | Flag | Description |
 |------|-------------|
+| `--n <5-30>` | Number of slides, integer in `5–30` (**required**) |
 | `--prompt <text>` | Text describing the presentation topic, purpose, and key points |
 | `--outline <path-or-url>` | Outline document (local path auto-uploaded; repeatable for multiple files) |
-| `--n <5-30>` | Number of slides, default 10 |
 | `--aspect-ratio <ratio>` | Aspect ratio, default 16:9 (e.g. `16:9`, `4:3`) |
 | `--style <name>` | Layout preset: `modern` / `corporate` / `creative` / `minimal` / `tech` |
 | `--language <code>` | Output language: `zh` / `en` / `ja` |
@@ -162,10 +162,10 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 ### Step 4: Present result
    - **On success:** Show the download URL. **Always show `sessionId`** (note: it is a number type, e.g. `123`) so the user can pass it in a retry if needed.
    - **On failure:** Report the `error` field. Common causes:
-     - Missing required parameter — neither `--prompt` nor `--outline` provided
+     - Missing required parameter — `--n` not provided, or neither `--prompt` nor `--outline` provided
      - Unsupported outline format — file format not supported
      - Outline file too large — exceeds 50MB
-     - `--n` out of range or invalid `--language` code
+     - `--n` out of range (must be 5–30) or invalid `--language` code
      - Generation failed — internal error; retry or simplify the prompt
    - The result is automatically attached to the session (auto-created or reused). The user can open the platform frontend to see all iterations in one place.
    - If the user is not satisfied and wants to iterate, instruct them to pass `--session-id <sessionId>` (number type) in the next run — both versions appear in the same session history on the frontend.
@@ -178,7 +178,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 |--------------------------|----------|--------------|------------------------------------------------------------------------------|
 | `--prompt <text>`        | No       | —            | Text describing the topic, purpose, and key points of the presentation       |
 | `--outline <path-or-url>` | No      | —            | Outline document (local path auto-uploaded; repeatable for multiple files)   |
-| `--n <5-30>`             | No       | `10`         | Number of slides, range 5–30                                                 |
+| `--n <5-30>`             | Yes      | —            | Number of slides, integer in range 5–30                                      |
 | `--aspect-ratio <ratio>` | No       | `16:9`       | Slide aspect ratio: `16:9` (widescreen, 1920×1080 px) / `4:3` (standard, 1024×768 px) |
 | `--style <name>`         | No       | —            | Layout preset: `modern` / `corporate` / `creative` / `minimal` / `tech`. See **Preset Styles** section for details. Use as a quick shorthand; omit when `--prompt` already covers the visual direction |
 | `--language <code>`      | No       | auto-detect  | Output language: `zh` / `en` / `ja`                                          |
@@ -206,7 +206,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 
 - ALWAYS run `check_env.mjs` before first use in a session
 - Provide at least `--prompt` or `--outline`
-- `--n` must be an integer between 5 and 30
+- `--n` is **required** and must be an integer between 5 and 30 — never run the command without it
 - The request is always submitted asynchronously; `--nowait` only controls whether the script polls locally (`false`, default) or returns the `taskId` immediately (`true`) — do not treat it as the API `noWait` field
 - In async mode (`--nowait true`), guide the user/Agent to resolve the `taskId` via the **surgepix-query-task** skill
 - If the user wants to iterate, they pass `--session-id 123` in the next run — both versions appear in the same session on the frontend.
