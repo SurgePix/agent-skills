@@ -189,16 +189,13 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 
 ## Preset Styles
 
-| Style | Parameter | Description | Use Cases |
-|-------|-----------|-------------|-----------|
-| Modern | `modern` | Modular grids, generous whitespace, geometric elements, minimal decoration | Executive presentations, product launches |
-| Corporate | `corporate` | Structured modules, dashboard-inspired, card-based information, KPI focus | Annual summaries, financial reports, strategy |
-| Creative | `creative` | Organic collages, layered composition, handwritten notes, Polaroid-style frames | Creative team showcases, brand storytelling |
-| Minimal | `minimal` | Editorial layouts, elegant balance, blurred backgrounds, refined typography | Premium brands, design portfolios |
-| Tech | `tech` | Modular interface grids, dark UI, glowing dividers, futuristic feel | Tech products, data-driven content |
-| Academic | `academic` | Editorial grids, chapter hierarchy, structured layouts, content-focused | Academic reports, research results, lectures |
-| Fashion | `fashion` | Flexible editorial, image-driven storytelling, magazine-inspired, artistic | Fashion brands, product catalogs, lifestyle |
-| Illustration | `illustration` | Illustration-centered, geometric decorations, rounded containers, playful | Educational content, kids products, brand stories |
+| Style | Parameter | Description |
+|-------|-----------|-------------|
+| Modern | `modern` | Modern, clean, sleek design with bold typography and vibrant gradients |
+| Corporate | `corporate` | Corporate, professional design with a restrained color palette, structured grid layout and clear typography |
+| Creative | `creative` | Creative, playful design with expressive shapes, bold color accents and dynamic asymmetric composition |
+| Minimal | `minimal` | Minimal design with ample white space, simple typography and a limited color palette |
+| Tech | `tech` | Tech, futuristic design with dark backgrounds, neon accents, geometric lines and a sleek high-tech feel |
 
 ---
 
