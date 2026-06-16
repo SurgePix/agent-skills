@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 /**
- * SurgePix 去背景 CLI
+ * SurgePix 生成海报 CLI
  *
  * 流程:
- *   1. 本地图片 → 上传拿到 fileUrl（可选，直接传 URL 则跳过）
- *   2. POST /tasks/remove-background   (始终异步提交：API noWait=false，立即返回 taskId)
+ *   1. 本地参考图 → 上传拿到 URL（可选，直接传 URL 则跳过）
+ *   2. POST /tasks/generate-poster   (始终异步提交：API noWait=true，立即返回 taskId)
  *   3. 根据 --nowait 决定行为:
  *      - --nowait false（默认，同步）：脚本内部轮询 GET /tasks/{taskId} 直到 succeeded / failed
  *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
  *
  * 用法:
- *   node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]
+ *   node generate_poster.mjs --event-name <text> --date <text> --venue <text>
+ *                            [--prompt <text>] [--description <text>] [--style <name>]
+ *                            [--size <1080x1920>] [--reference <path-or-url> ...]
+ *                            [--session-id <id>] [--nowait <true|false>]
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
@@ -20,8 +23,8 @@
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL} from "node:url";
-import { discoverAndLoadEnv, loadConfig } from "../../surgepix-setup/scripts/env.mjs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
@@ -32,9 +35,9 @@ const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 // 常量
 // ============================================================
 
-const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
+const DEFAULT_BASE_URL = "https://api-test.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
-const POLL_TIMEOUT_MS = 300_000;
+const POLL_TIMEOUT_MS = 600_000;
 const DEFAULT_USER_AGENT =
   process.env.SURGEPIX_USER_AGENT ??
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -94,16 +97,19 @@ async function apiRequest(method, urlPath, { body, timeout = 120_000 } = {}) {
 }
 
 // ============================================================
-// 上传本地文件
+// 上传本地参考图
 // ============================================================
 
-async function uploadLocalFile(imagePath) {
-  const resolved = path.resolve(imagePath);
+async function resolveReference(ref) {
+  if (ref.startsWith("http://") || ref.startsWith("https://")) {
+    return ref;
+  }
+  const resolved = path.resolve(ref);
   if (!existsSync(resolved)) {
-    throw new Error(`文件不存在: ${resolved}`);
+    throw new Error(`参考图文件不存在: ${resolved}`);
   }
   refreshUploadConfig();
-  console.error(`[upload] uploading ${resolved}`);
+  console.error(`[upload] uploading reference ${resolved}`);
   const result = await uploadFile(resolved);
   if (!result.url) {
     throw new Error(`上传成功但未返回 url: ${JSON.stringify(result)}`);
@@ -113,17 +119,33 @@ async function uploadLocalFile(imagePath) {
 }
 
 // ============================================================
-// 去背景 API
+// 生成海报 API
 // ============================================================
 
-// 始终异步提交：去背景接口 noWait=false 表示立即返回 taskId（异步），由脚本/Agent 后续轮询
-async function removeBackground(fileUrl, { sessionId } = {}) {
-  const body = { fileUrl, noWait: false };
-  if (sessionId != null) {
-    body.sessionId = sessionId;
+async function generatePoster(options) {
+  const {
+    eventName,
+    date,
+    venue,
+    prompt,
+    description,
+    style,
+    size,
+    referenceImages,
+    sessionId,
+  } = options;
+  // noWait 写死 true，Agent 无需也无法传递该参数
+  const body = { noWait: true, eventName, date, venue };
+  if (prompt != null) body.prompt = prompt;
+  if (description != null) body.description = description;
+  if (style != null) body.style = style;
+  if (size != null) body.size = size;
+  if (referenceImages != null && referenceImages.length > 0) {
+    body.referenceImages = referenceImages;
   }
-  console.error(`[remove-background] fileUrl=${fileUrl} (async submit, noWait=false)`);
-  return apiRequest("POST", "/tasks/remove-background", { body });
+  if (sessionId != null) body.sessionId = sessionId;
+  console.error(`[generate-poster] eventName=${eventName}`);
+  return apiRequest("POST", "/tasks/generate-poster", { body });
 }
 
 // ============================================================
@@ -189,10 +211,22 @@ function fail(message) {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { input: null, nowait: false, sessionId: null };
+  const parsed = {
+    eventName: null,
+    date: null,
+    venue: null,
+    prompt: null,
+    description: null,
+    style: null,
+    size: null,
+    referenceImages: [],
+    sessionId: null,
+    nowait: false,
+  };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--nowait") {
+    const arg = args[i];
+    if (arg === "--nowait") {
       const next = args[i + 1];
       if (next === "true" || next === "false") {
         parsed.nowait = next === "true";
@@ -200,20 +234,50 @@ function parseArgs() {
       } else {
         parsed.nowait = true;
       }
-    } else if (args[i] === "--session-id" && i + 1 < args.length) {
+    } else if (arg === "--event-name" && i + 1 < args.length) {
+      parsed.eventName = args[++i];
+    } else if (arg === "--date" && i + 1 < args.length) {
+      parsed.date = args[++i];
+    } else if (arg === "--venue" && i + 1 < args.length) {
+      parsed.venue = args[++i];
+    } else if (arg === "--prompt" && i + 1 < args.length) {
+      parsed.prompt = args[++i];
+    } else if (arg === "--description" && i + 1 < args.length) {
+      parsed.description = args[++i];
+    } else if (arg === "--style" && i + 1 < args.length) {
+      parsed.style = args[++i];
+    } else if (arg === "--size" && i + 1 < args.length) {
+      parsed.size = args[++i];
+    } else if (arg === "--reference" && i + 1 < args.length) {
+      parsed.referenceImages.push(args[++i]);
+    } else if (arg === "--session-id" && i + 1 < args.length) {
       parsed.sessionId = Number(args[++i]);
-    } else if (args[i] === "-h" || args[i] === "--help") {
-      console.error("Usage: node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]");
+    } else if (arg === "-h" || arg === "--help") {
+      console.error("Usage: node generate_poster.mjs --event-name <text> --date <text> --venue <text> \\");
+      console.error("         [--prompt <text>] [--description <text>] [--style <name>] [--size <1080x1920>] \\");
+      console.error("         [--reference <path-or-url> ...] [--session-id <id>] [--nowait <true|false>]");
       console.error("");
-      console.error("  <image-path-or-url>   本地图片路径 或 已上传的 URL");
-      console.error("  --nowait <true|false> false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
-      console.error("  --session-id <id>     会话 ID，迭代时传入");
+      console.error("  --event-name <text>      海报主标题（必填）");
+      console.error("  --date <text>            活动日期时间（必填），如 2026-06-15 19:00");
+      console.error("  --venue <text>           海报上展示的地点（必填）");
+      console.error("  --prompt <text>          创作方向（配色/排版等），不会印在海报上");
+      console.error("  --description <text>     印在海报上的宣传语，最多 100 字符");
+      console.error("  --style <name>           版式预设 modern/vintage/minimalist/bold");
+      console.error("  --size <WxH>             输出尺寸，默认 1080x1920");
+      console.error("  --reference <path-or-url> 参考图（本地路径自动上传，可重复传多个）");
+      console.error("  --session-id <id>        会话 ID，迭代调整时传入");
+      console.error("  --nowait <true|false>    false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
       process.exit(0);
-    } else if (!parsed.input) {
-      parsed.input = args[i];
     }
   }
   return parsed;
+}
+
+function validateDescription(description) {
+  if (description == null) return;
+  if (description.length > 100) {
+    fail(`--description 最多 100 个字符，收到: ${description.length}`);
+  }
 }
 
 async function main() {
@@ -223,20 +287,41 @@ async function main() {
     fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
   }
 
-  const { input, nowait, sessionId } = parseArgs();
-  if (!input) {
-    fail("缺少参数: 请提供图片路径或 URL");
+  const {
+    eventName,
+    date,
+    venue,
+    prompt,
+    description,
+    style,
+    size,
+    referenceImages,
+    sessionId,
+    nowait,
+  } = parseArgs();
+
+  if (!eventName || !date || !venue) {
+    fail("缺少必填参数: --event-name、--date、--venue 都必须提供");
   }
+  validateDescription(description);
 
   try {
-    let fileUrl;
-    if (input.startsWith("http://") || input.startsWith("https://")) {
-      fileUrl = input;
-    } else {
-      fileUrl = await uploadLocalFile(input);
+    const resolvedReferences = [];
+    for (const ref of referenceImages) {
+      resolvedReferences.push(await resolveReference(ref));
     }
 
-    const data = await removeBackground(fileUrl, { sessionId });
+    const data = await generatePoster({
+      eventName,
+      date,
+      venue,
+      prompt,
+      description,
+      style,
+      size,
+      referenceImages: resolvedReferences,
+      sessionId,
+    });
 
     const taskId = data.taskId;
     if (!taskId) {
@@ -264,4 +349,4 @@ if (isMain) {
   main();
 }
 
-export { removeBackground, pollUntilDone, uploadLocalFile };
+export { generatePoster, pollUntilDone, resolveReference };

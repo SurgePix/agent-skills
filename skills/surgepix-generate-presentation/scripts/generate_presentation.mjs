@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 /**
- * SurgePix 去背景 CLI
+ * SurgePix 生成 PPT CLI
  *
  * 流程:
- *   1. 本地图片 → 上传拿到 fileUrl（可选，直接传 URL 则跳过）
- *   2. POST /tasks/remove-background   (始终异步提交：API noWait=false，立即返回 taskId)
+ *   1. 本地大纲文件 → 上传拿到 URL（可选，直接传 URL 则跳过）
+ *   2. POST /tasks/generate-presentation   (始终异步提交：API noWait=true，立即返回 taskId)
  *   3. 根据 --nowait 决定行为:
  *      - --nowait false（默认，同步）：脚本内部轮询 GET /tasks/{taskId} 直到 succeeded / failed
  *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
  *
  * 用法:
- *   node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]
+ *   node generate_presentation.mjs --n <5-30> [--prompt <text>] [--outline <path-or-url> ...]
+ *                                  [--aspect-ratio <16:9>] [--style <name>]
+ *                                  [--language <zh|en|ja>] [--session-id <id>] [--nowait <true|false>]
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
@@ -20,8 +22,8 @@
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL} from "node:url";
-import { discoverAndLoadEnv, loadConfig } from "../../surgepix-setup/scripts/env.mjs";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
@@ -34,7 +36,7 @@ const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 
 const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
-const POLL_TIMEOUT_MS = 300_000;
+const POLL_TIMEOUT_MS = 600_000;
 const DEFAULT_USER_AGENT =
   process.env.SURGEPIX_USER_AGENT ??
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -94,16 +96,19 @@ async function apiRequest(method, urlPath, { body, timeout = 120_000 } = {}) {
 }
 
 // ============================================================
-// 上传本地文件
+// 上传本地大纲文件
 // ============================================================
 
-async function uploadLocalFile(imagePath) {
-  const resolved = path.resolve(imagePath);
+async function resolveOutline(outline) {
+  if (outline.startsWith("http://") || outline.startsWith("https://")) {
+    return outline;
+  }
+  const resolved = path.resolve(outline);
   if (!existsSync(resolved)) {
-    throw new Error(`文件不存在: ${resolved}`);
+    throw new Error(`大纲文件不存在: ${resolved}`);
   }
   refreshUploadConfig();
-  console.error(`[upload] uploading ${resolved}`);
+  console.error(`[upload] uploading outline ${resolved}`);
   const result = await uploadFile(resolved);
   if (!result.url) {
     throw new Error(`上传成功但未返回 url: ${JSON.stringify(result)}`);
@@ -113,17 +118,21 @@ async function uploadLocalFile(imagePath) {
 }
 
 // ============================================================
-// 去背景 API
+// 生成 PPT API
 // ============================================================
 
-// 始终异步提交：去背景接口 noWait=false 表示立即返回 taskId（异步），由脚本/Agent 后续轮询
-async function removeBackground(fileUrl, { sessionId } = {}) {
-  const body = { fileUrl, noWait: false };
-  if (sessionId != null) {
-    body.sessionId = sessionId;
-  }
-  console.error(`[remove-background] fileUrl=${fileUrl} (async submit, noWait=false)`);
-  return apiRequest("POST", "/tasks/remove-background", { body });
+async function generatePresentation(options) {
+  const { prompt, outlines, n, aspectRatio, style, language, sessionId } = options;
+  const body = { noWait: true };
+  if (prompt != null) body.prompt = prompt;
+  if (outlines != null && outlines.length > 0) body.outlines = outlines;
+  if (n != null) body.n = n;
+  if (aspectRatio != null) body.aspectRatio = aspectRatio;
+  if (style != null) body.style = style;
+  if (language != null) body.language = language;
+  if (sessionId != null) body.sessionId = sessionId;
+  console.error(`[generate-presentation] n=${n ?? "default"}`);
+  return apiRequest("POST", "/tasks/generate-presentation", { body });
 }
 
 // ============================================================
@@ -189,10 +198,20 @@ function fail(message) {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { input: null, nowait: false, sessionId: null };
+  const parsed = {
+    prompt: null,
+    outlines: [],
+    n: null,
+    aspectRatio: null,
+    style: null,
+    language: null,
+    sessionId: null,
+    nowait: false,
+  };
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--nowait") {
+    const arg = args[i];
+    if (arg === "--nowait") {
       const next = args[i + 1];
       if (next === "true" || next === "false") {
         parsed.nowait = next === "true";
@@ -200,20 +219,46 @@ function parseArgs() {
       } else {
         parsed.nowait = true;
       }
-    } else if (args[i] === "--session-id" && i + 1 < args.length) {
+    } else if (arg === "--prompt" && i + 1 < args.length) {
+      parsed.prompt = args[++i];
+    } else if (arg === "--outline" && i + 1 < args.length) {
+      parsed.outlines.push(args[++i]);
+    } else if (arg === "--n" && i + 1 < args.length) {
+      parsed.n = Number(args[++i]);
+    } else if (arg === "--aspect-ratio" && i + 1 < args.length) {
+      parsed.aspectRatio = args[++i];
+    } else if (arg === "--style" && i + 1 < args.length) {
+      parsed.style = args[++i];
+    } else if (arg === "--language" && i + 1 < args.length) {
+      parsed.language = args[++i];
+    } else if (arg === "--session-id" && i + 1 < args.length) {
       parsed.sessionId = Number(args[++i]);
-    } else if (args[i] === "-h" || args[i] === "--help") {
-      console.error("Usage: node remove_background.mjs <image-path-or-url> [--nowait <true|false>] [--session-id <id>]");
+    } else if (arg === "-h" || arg === "--help") {
+      console.error("Usage: node generate_presentation.mjs --n <5-30> [--prompt <text>] [--outline <path-or-url> ...] \\");
+      console.error("         [--aspect-ratio <16:9>] [--style <name>] [--language <zh|en|ja>] \\");
+      console.error("         [--session-id <id>] [--nowait <true|false>]");
       console.error("");
-      console.error("  <image-path-or-url>   本地图片路径 或 已上传的 URL");
-      console.error("  --nowait <true|false> false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
-      console.error("  --session-id <id>     会话 ID，迭代时传入");
+      console.error("  --prompt <text>         演示文稿主题、目的和核心要点");
+      console.error("  --outline <path-or-url> 大纲文档（本地路径自动上传，可重复传多个）");
+      console.error("  --n <5-30>              幻灯片数量（必填），5-30 之间的整数");
+      console.error("  --aspect-ratio <ratio>  画面比例，默认 16:9");
+      console.error("  --style <name>          版式预设 modern/corporate/creative/minimal/tech");
+      console.error("  --language <code>       输出语言 zh/en/ja");
+      console.error("  --session-id <id>       会话 ID，迭代调整时传入");
+      console.error("  --nowait <true|false>   false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
       process.exit(0);
-    } else if (!parsed.input) {
-      parsed.input = args[i];
     }
   }
   return parsed;
+}
+
+function validateN(n) {
+  if (n == null) {
+    fail("缺少必填参数: --n（幻灯片数量，5-30 之间的整数）");
+  }
+  if (!Number.isInteger(n) || n < 5 || n > 30) {
+    fail(`--n 必须是 5-30 之间的整数，收到: ${n}`);
+  }
 }
 
 async function main() {
@@ -223,20 +268,28 @@ async function main() {
     fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
   }
 
-  const { input, nowait, sessionId } = parseArgs();
-  if (!input) {
-    fail("缺少参数: 请提供图片路径或 URL");
+  const { prompt, outlines, n, aspectRatio, style, language, sessionId, nowait } = parseArgs();
+
+  if (!prompt && outlines.length === 0) {
+    fail("缺少参数: 请至少提供 --prompt 或 --outline");
   }
+  validateN(n);
 
   try {
-    let fileUrl;
-    if (input.startsWith("http://") || input.startsWith("https://")) {
-      fileUrl = input;
-    } else {
-      fileUrl = await uploadLocalFile(input);
+    const resolvedOutlines = [];
+    for (const outline of outlines) {
+      resolvedOutlines.push(await resolveOutline(outline));
     }
 
-    const data = await removeBackground(fileUrl, { sessionId });
+    const data = await generatePresentation({
+      prompt,
+      outlines: resolvedOutlines,
+      n,
+      aspectRatio,
+      style,
+      language,
+      sessionId,
+    });
 
     const taskId = data.taskId;
     if (!taskId) {
@@ -264,4 +317,4 @@ if (isMain) {
   main();
 }
 
-export { removeBackground, pollUntilDone, uploadLocalFile };
+export { generatePresentation, pollUntilDone, resolveOutline };

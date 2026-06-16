@@ -26,9 +26,11 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | `surgepix-setup` | "setup surgepix", first use | Check & configure environment |
 | `surgepix-upload` | "upload", "get URL", "上传文件" | Upload local file → public HTTPS URL |
 | `surgepix-remove-background` | "remove background", "抠图", "去背景" | Remove background → transparent PNG |
+| `surgepix-generate-poster` | "generate poster", "生成海报" | Generate event poster → PNG |
+| `surgepix-generate-presentation` | "generate ppt", "生成PPT" | Generate presentation → PPTX |
 | `surgepix-query-task` | "check task", "poll task", "查任务" | Query/poll async task status |
 
-> Background removal typically takes 5–15 seconds. The skill handles polling automatically by default; pass `--sync` (noWait=true) to wait for the result in a single call.
+> The task-producing skills (`remove-background`, `generate-poster`, `generate-presentation`) always submit the request asynchronously and expose a `--nowait` flag. With `--nowait false` (default) the script polls internally and returns the final `download` URL in one call; with `--nowait true` it returns immediately with a `taskId`, which you then resolve via the `surgepix-query-task` skill.
 
 ### Install
 
@@ -76,10 +78,10 @@ Remove background from an image:
 node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png
 ```
 
-Remove background (synchronous, wait for result):
+Remove background (async — return taskId immediately, resolve later via query-task):
 
 ```bash
-node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png --sync
+node surgepix-remove-background/scripts/remove_background.mjs /path/to/image.png --nowait true
 ```
 
 Upload a file and get a public URL:
@@ -91,7 +93,7 @@ node surgepix-upload/scripts/file_upload.mjs /path/to/file.png
 Check task status:
 
 ```bash
-node surgepix-query-task/scripts/query_task.mjs task_abc123 --poll
+node surgepix-query-task/scripts/query_task.mjs task_abc123
 ```
 
 ## Usage Flow
@@ -122,7 +124,7 @@ User request (upload / remove-background)
 | Output format | Transparent `.png` (background removal) |
 | Input types | Local file path or remote URL |
 | Supported formats | JPEG, PNG, WebP, GIF |
-| Async task handling | ✅ `taskId` polling or synchronous wait (`noWait=true`) |
+| Async task handling | ✅ Always async submit; script-side polling (`--nowait false`) or return `taskId` (`--nowait true`) |
 | Session support | ✅ Group iterations under one session |
 | NSFW detection | ✅ Automatic content safety check on upload |
 | Agent Skill support | ✅ Claude Code, Codex, Cursor, Gemini, OpenClaw |
@@ -151,7 +153,7 @@ User request (upload / remove-background)
 Claude Code, Codex CLI, Cursor, Gemini CLI, OpenClaw, and any agent that supports the SKILL.md standard.
 
 **How long does background removal take?**
-Typically 5–15 seconds. The skill handles async polling internally so you don't have to wait manually. Use `--sync` or `noWait=true` for single-call synchronous mode.
+Typically 5–15 seconds. By default (`--nowait false`) the skill handles async polling internally so you don't have to wait manually. Pass `--nowait true` to return immediately with a `taskId` and resolve it later via the `surgepix-query-task` skill.
 
 **What file format does SurgePix output?**
 Transparent `.png` files for background removal results.
