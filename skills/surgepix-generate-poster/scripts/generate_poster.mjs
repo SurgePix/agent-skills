@@ -35,7 +35,7 @@ const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 // 常量
 // ============================================================
 
-const DEFAULT_BASE_URL = "https://api-test.surgepix.ai/api";
+const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 600_000;
 const DEFAULT_USER_AGENT =
