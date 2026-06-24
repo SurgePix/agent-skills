@@ -12,7 +12,11 @@
  * Exit code: 0 if configured, 1 if not
  */
 
-import { getConfigStatus } from "./env.mjs";
+import { ensureBaseUrl, getConfigStatus } from "./env.mjs";
+
+// Init: make sure SURGEPIX_BASE_URL is written to the user's local .env once,
+// so every other skill can read it from the environment afterwards.
+ensureBaseUrl();
 
 const status = getConfigStatus();
 

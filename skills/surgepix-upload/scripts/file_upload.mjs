@@ -14,7 +14,7 @@
  *
  * Keys:
  *   SURGEPIX_API_KEY    (required) Bearer token
- *   SURGEPIX_BASE_URL      (optional) default https://api.surgepix.ai/api
+ *   SURGEPIX_BASE_URL      written to local .env by surgepix-setup(init), then read from env
  *   SURGEPIX_UPLOAD_FOLDER (optional) default files
  */
 
