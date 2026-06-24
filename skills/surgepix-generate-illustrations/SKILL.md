@@ -1,17 +1,33 @@
 ---
 name: surgepix-generate-illustrations
-description: Generate article illustrations (16:9 horizontal, 1536x864) using the SurgePix API, returning a download URL. Use when the user says "generate illustrations", "生成配图", "文章配图", "博客插图", "公众号配图", "推文配图", "make article images", or wants horizontal illustrations for blog posts, WeChat articles, or tweets.
+description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Do NOT use for 小红书/RED/竖版套图/笔记轮播 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before choosing a skill.
 ---
 
 # SurgePix Generate Illustrations
 
-Generate article illustrations (16:9 horizontal hand-drawn style, fixed 1536×864) from a topic or per-shot specifications, and get a download URL.
+Generate **16:9 horizontal** article illustrations (hand-drawn style, fixed 1536×864) from a topic or per-shot specifications, and get a download URL.
+
+## Skill router (read first)
+
+| Use this skill | Use **surgepix-generate-xhs** instead |
+|----------------|---------------------------------------|
+| 公众号 / 博客 / 推文 / 文章 | 小红书 / RED / 笔记 / 套图 |
+| 16:9 horizontal editorial illustrations | Vertical carousel (cover + content pages) |
+| Hand-drawn style with handwritten annotations | Social post image set (modern/vintage/bold presets) |
+
+**Do NOT use this skill when:**
+- User wants 小红书套图, 小红书笔记图, 竖版轮播, or RED post images
+- User explicitly mentions 小红书, RED, 笔记, or vertical social carousel
+
+**Ambiguous input:** If the user only says「配图」「做几张图」without platform or aspect ratio, ask:
+> 是要 **小红书竖版套图**（笔记轮播），还是 **公众号/博客横版插图**（16:9）？
 
 ## When to use
 
-- User says "生成配图", "文章配图", "博客插图", "公众号配图", "推文配图", "generate illustrations", "make article images"
-- User wants horizontal illustrations for blog posts, WeChat Official Account articles, tweets, or other editorial content
+- User says "文章配图", "博客插图", "公众号配图", "推文配图", "generate illustrations", "make article images"
+- User wants **horizontal (16:9)** illustrations for blog posts, WeChat Official Account articles, tweets, or other editorial content
 - User provides a topic/article summary or detailed per-shot specifications
+- User says「生成配图」**and** context indicates 公众号/博客/文章/横版 (not 小红书/笔记/竖版)
 
 ## Prerequisites
 
@@ -198,6 +214,8 @@ All generated illustrations are:
 
 ## Rules
 
+- This skill is for **16:9 horizontal article/editorial illustrations only** — never use it for 小红书/RED vertical套图 (use **surgepix-generate-xhs**)
+- If the user only says「配图」without 小红书/公众号/博客/横版/竖版, ask which platform and aspect ratio before running
 - ALWAYS run `check_env.mjs` before first use in a session
 - At least one of `--topic` or `--shots`/`--shots-file` must be provided
 - `--count` must be 1–9 when provided; only effective in topic mode (no `--shots`)

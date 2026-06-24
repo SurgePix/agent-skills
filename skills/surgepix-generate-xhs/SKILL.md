@@ -1,17 +1,32 @@
 ---
 name: surgepix-generate-xhs
-description: Generate Xiaohongshu (RED) style vertical image sets using the SurgePix API, returning a download URL (ZIP for multiple images). Use when the user says "generate xiaohongshu images", "生成小红书套图", "做小红书图", "小红书配图", "make RED post images", or wants vertical carousel images for Xiaohongshu/RED.
+description: Generate Xiaohongshu (RED) vertical carousel image sets (cover + content pages) via SurgePix. Vertical social format for 小红书/RED/笔记 — NOT 16:9 article illustrations. Use when the user explicitly wants 小红书套图, 小红书笔记图, 竖版轮播, RED post images, or mentions 小红书/RED/笔记. Do NOT use for 公众号/博客/推文/文章配图 or horizontal illustrations — use surgepix-generate-illustrations. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Xiaohongshu Images
 
-Generate Xiaohongshu (小红书) style vertical image sets from per-page copy descriptions plus optional reference images, and get a download URL.
+Generate Xiaohongshu (小红书) **vertical** carousel image sets (cover + content pages) from per-page copy descriptions plus optional reference images, and get a download URL.
+
+## Skill router (read first)
+
+| Use this skill | Use **surgepix-generate-illustrations** instead |
+|----------------|--------------------------------------------------|
+| 小红书 / RED / 笔记 / 套图 / 竖版轮播 | 公众号 / 博客 / 推文 / 文章 |
+| Vertical carousel (cover + pages) | 16:9 horizontal article illustrations (1536×864) |
+| Social post image set, up to 16 images | Editorial hand-drawn illustrations, up to 9 images |
+
+**Do NOT use this skill when:**
+- User wants 公众号配图, 博客插图, 推文配图, or 横版/16:9 文章插图
+- User did not mention 小红书/RED/笔记/竖版, and the content is for a blog or WeChat article
+
+**Ambiguous input:** If the user only says「配图」「做几张图」without platform or aspect ratio, ask:
+> 是要 **小红书竖版套图**（笔记轮播），还是 **公众号/博客横版插图**（16:9）？
 
 ## When to use
 
-- User says "生成小红书套图", "做小红书图", "小红书配图", "generate xiaohongshu images", "make RED post images"
-- User wants to create vertical carousel images for Xiaohongshu/RED platform
-- User provides a topic or per-page copy and wants cover + content images in Xiaohongshu style
+- User says "生成小红书套图", "做小红书图", "小红书笔记图", "generate xiaohongshu images", "make RED post images"
+- User explicitly mentions 小红书, RED, 笔记, 竖版轮播, or vertical carousel for social posts
+- User provides per-page copy and wants cover + content images in Xiaohongshu style
 
 ## Prerequisites
 
@@ -245,6 +260,8 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 
 ## Rules
 
+- This skill is for **小红书/RED vertical套图 only** — never use it for 公众号/博客/推文横版配图 (use **surgepix-generate-illustrations**)
+- If the user only says「配图」without 小红书/公众号/博客/横版/竖版, ask which platform and aspect ratio before running
 - ALWAYS run `check_env.mjs` before first use in a session
 - At least one `--prompt` is required — never run the command without it
 - API `prompt` is `list(string)`; script sends an array. `--prompt` count must equal `--count`, except when only 1 `--prompt` is given and `count > 1` (script auto-repeats)
