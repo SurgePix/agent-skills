@@ -1,6 +1,5 @@
 {
   "env": {
-    "SURGEPIX_API_KEY": "your-bearer-token-here",
-    "SURGEPIX_BASE_URL": "https://api.surgepix.ai/api"
+    "SURGEPIX_API_KEY": "your-bearer-token-here"
   }
 }

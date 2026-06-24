@@ -14,7 +14,7 @@
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
- *   SURGEPIX_BASE_URL       可选，默认 https://api.surgepix.ai/api
+ *   SURGEPIX_BASE_URL       由 surgepix-setup(init) 写入本地 .env 后从环境变量读取
  *   SURGEPIX_UPLOAD_FOLDER  可选，默认 files
  */
 
@@ -32,7 +32,6 @@ const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 // 常量
 // ============================================================
 
-const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 300_000;
 const DEFAULT_USER_AGENT =
@@ -43,15 +42,10 @@ const DEFAULT_USER_AGENT =
 // 配置
 // ============================================================
 
-let config = { baseUrl: DEFAULT_BASE_URL, folder: "files", apiKey: "" };
+let config = { baseUrl: "", folder: "files", apiKey: "" };
 
 function initConfig() {
-  loadConfig();
-  config = {
-    baseUrl: process.env.SURGEPIX_BASE_URL ?? DEFAULT_BASE_URL,
-    folder: process.env.SURGEPIX_UPLOAD_FOLDER ?? "files",
-    apiKey: process.env.SURGEPIX_API_KEY ?? "",
-  };
+  config = loadConfig();
 }
 
 // ============================================================

@@ -57,20 +57,19 @@ After user provides the key, write `.env` in the project root:
 ```bash
 cat > .env << 'EOF'
 SURGEPIX_API_KEY=<user-provided-key>
-SURGEPIX_BASE_URL=https://api.surgepix.ai/api
 SURGEPIX_UPLOAD_FOLDER=files
 EOF
 ```
 
-This is the **only required config**. All SurgePix scripts load it automatically.
+`SURGEPIX_API_KEY` is the **only required config**. Do **not** hardcode the API base URL here — `check_env.mjs` (Step 4) writes `SURGEPIX_BASE_URL` into `.env` automatically if it is missing, and every other skill simply reads it from the environment.
 
-### Step 4: Verify
+### Step 4: Verify (also initializes `SURGEPIX_BASE_URL`)
 
 ```bash
 node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 ```
 
-Must exit 0. Then proceed with the user's original task.
+This step also ensures `SURGEPIX_BASE_URL` exists in your local `.env` (writing the environment default the first time). Must exit 0. Then proceed with the user's original task.
 
 ### Step 5: Protect secrets
 

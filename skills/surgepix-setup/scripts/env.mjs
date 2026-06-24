@@ -139,6 +139,43 @@ export function getConfigStatus() {
 }
 
 /**
+ * Init-only helper: ensure SURGEPIX_BASE_URL exists in the user's local env.
+ *
+ * Called during setup/init. If the variable is already set (shell env or an
+ * existing .env line), it is left untouched. Otherwise the branch default
+ * (DEFAULT_BASE_URL) is written into .env so every other skill can simply read
+ * SURGEPIX_BASE_URL from the environment afterwards. The base URL literal lives
+ * here (the init module) only — skills never hardcode it.
+ *
+ * @param {string} dir - directory whose .env should hold the variable
+ * @returns {{ baseUrl: string, written: boolean, envPath: string }}
+ */
+export function ensureBaseUrl(dir = process.cwd()) {
+  discoverAndLoadEnv();
+
+  const existing = (
+    process.env.SURGEPIX_BASE_URL ??
+    process.env.SURGEPIX_API_BASE ??
+    ""
+  ).trim();
+  const envPath = path.join(dir, ".env");
+
+  if (existing) {
+    return { baseUrl: existing.replace(/\/$/, ""), written: false, envPath };
+  }
+
+  let content = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
+  const hasLine = /^\s*(export\s+)?SURGEPIX_BASE_URL\s*=/m.test(content);
+  if (!hasLine) {
+    if (content && !content.endsWith("\n")) content += "\n";
+    content += `SURGEPIX_BASE_URL=${DEFAULT_BASE_URL}\n`;
+    writeFileSync(envPath, content, "utf8");
+  }
+  process.env.SURGEPIX_BASE_URL = DEFAULT_BASE_URL;
+  return { baseUrl: DEFAULT_BASE_URL, written: !hasLine, envPath };
+}
+
+/**
  * Write .env file (portable config for all agents).
  * @param {string} dir - directory to write .env in
  * @param {{ apiKey: string, baseUrl?: string, folder?: string }} opts
