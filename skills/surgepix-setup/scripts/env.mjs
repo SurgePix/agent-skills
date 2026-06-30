@@ -10,7 +10,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
-export const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
+export const DEFAULT_BASE_URL = "https://api-test.surgepix.ai/api";
 export const DEFAULT_FOLDER = "files";
 
 /** @param {Record<string, string>} vars */

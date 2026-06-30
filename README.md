@@ -28,9 +28,13 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | `surgepix-remove-background` | "remove background", "抠图", "去背景" | Remove background → transparent PNG |
 | `surgepix-generate-poster` | "generate poster", "生成海报" | Generate event poster → PNG |
 | `surgepix-generate-presentation` | "generate ppt", "生成PPT" | Generate presentation → PPTX |
+| `surgepix-generate-xhs` | "小红书套图", "小红书笔记图", "竖版轮播" (NOT generic「配图」) | Xiaohongshu **vertical** carousel → PNG/ZIP |
+| `surgepix-generate-illustrations` | "文章配图", "公众号配图", "博客插图" (NOT 小红书/竖版) | **16:9 horizontal** article illustrations → PNG/ZIP |
 | `surgepix-query-task` | "check task", "poll task", "查任务" | Query/poll async task status |
 
-> The task-producing skills (`remove-background`, `generate-poster`, `generate-presentation`) always submit the request asynchronously and expose a `--nowait` flag. With `--nowait false` (default) the script polls internally and returns the final `download` URL in one call; with `--nowait true` it returns immediately with a `taskId`, which you then resolve via the `surgepix-query-task` skill.
+> **xhs vs illustrations:** If the user only says「配图」, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before picking a skill.
+
+> The task-producing skills always submit asynchronously and expose a `--nowait` flag. With `--nowait false` (default) the script polls internally and returns the final `download` URL in one call; with `--nowait true` it returns immediately with a `taskId`, which you then resolve via the `surgepix-query-task` skill.
 
 ### Install
 
