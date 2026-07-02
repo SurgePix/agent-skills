@@ -1,6 +1,6 @@
 ---
 name: surgepix-query-task
-description: Query or poll SurgePix async task status and get task results (download URL). Use when the user says "check task", "poll task", "query task status", "任务进度", "查任务", has a taskId from remove-background or other async API, or needs to wait for a task to finish.
+description: Query or poll SurgePix async task status and get task results (download URL). Use when the user says "check task", "poll task", "query task status", "任务进度", "查任务", has a taskId from remove-background, image-translate or other async API, or needs to wait for a task to finish.
 ---
 
 # SurgePix Query Task
@@ -9,7 +9,7 @@ Query task progress via `GET /tasks/{taskId}` once and print the current status.
 
 ## When to use
 
-- User has a `taskId` from an async SurgePix API (e.g. remove-background / generate-poster / generate-presentation 在 `--nowait true` 时返回的 `taskId`)
+- User has a `taskId` from an async SurgePix API (e.g. remove-background / generate-poster / generate-presentation / image-translate 在 `--nowait true` 时返回的 `taskId`)
 - User says "check task status", "poll task", "查任务进度", "任务完成了吗"
 - After submitting an async task, need to check whether the `download` URL is ready
 - 上游技能以 `--nowait true`（异步）方式运行，返回 `{"async":true,"taskId":...}` 后，用本技能在合适时机查询该任务（单次查询；未完成则稍后再查）
@@ -38,7 +38,7 @@ The user should provide a task ID returned by an async API, e.g.:
 {"taskId":"task_a1b2c3d4e5f6","progress":"processing"}
 ```
 
-If the user just submitted remove-background / generate-poster / generate-presentation 以 `--nowait true`（异步）模式运行，use the `taskId` from that response（响应中 `async:true`）。
+If the user just submitted remove-background / generate-poster / generate-presentation / image-translate 以 `--nowait true`（异步）模式运行，use the `taskId` from that response（响应中 `async:true`）。
 
 ### Step 2: Query (single call, no polling)
 
@@ -86,7 +86,7 @@ node "<skills-dir>/surgepix-query-task/scripts/query_task.mjs" "<taskId>"
 
 ## Typical flow with async skills
 
-适用于 remove-background / generate-poster / generate-presentation 以 `--nowait true` 运行：
+适用于 remove-background / generate-poster / generate-presentation / image-translate 以 `--nowait true` 运行：
 
 ```
 1. <skill> --nowait true → returns {"async":true,"taskId":...}
