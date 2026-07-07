@@ -1,6 +1,6 @@
 ---
 name: surgepix-query-task
-description: Query or poll SurgePix async task status and get task results (download URL). Use when the user says "check task", "poll task", "query task status", "任务进度", "查任务", has a taskId from remove-background, image-translate or other async API, or needs to wait for a task to finish.
+description: Query or poll SurgePix async task status and get task results (download URL). Use when the user says "check task", "poll task", "query task status", "任务进度", "查任务", has a taskId from remove-background, image-translate, generate-illustrations, generate-xhs or other async API, or needs to wait for a task to finish. Output rule: taskResult has only ONE download field. When download is a ZIP or resultType is zip, show ONLY that ZIP URL; NEVER fabricate individual image links.
 ---
 
 # SurgePix Query Task

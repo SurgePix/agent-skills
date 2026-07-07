@@ -155,18 +155,31 @@ async function pollUntilDone(taskId) {
 // 输出结果
 // ============================================================
 
-function printResult(data) {
+function buildOutputMeta(imageCount) {
+  const count = imageCount ?? 1;
+  const isZip = count > 1;
+  return {
+    imageCount: count,
+    resultType: isZip ? "zip" : "image",
+    note: isZip
+      ? "API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"
+      : "API 返回单张图片下载地址",
+  };
+}
+
+function printResult(data, { imageCount } = {}) {
   const output = {
     ok: true,
     taskId: data.taskId,
     sessionId: data.sessionId,
     progress: data.progress,
     download: data.taskResult?.download ?? null,
+    ...buildOutputMeta(imageCount),
   };
   console.log(JSON.stringify(output));
 }
 
-function printAsyncResult(data) {
+function printAsyncResult(data, { imageCount } = {}) {
   const taskId = data.taskId;
   const output = {
     ok: true,
@@ -175,6 +188,7 @@ function printAsyncResult(data) {
     sessionId: data.sessionId ?? null,
     progress: data.progress ?? "processing",
     download: data.taskResult?.download ?? null,
+    ...buildOutputMeta(imageCount),
     hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态（单次查询，未完成则稍后再查），例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId}`,
   };
   console.log(JSON.stringify(output));
@@ -287,6 +301,8 @@ async function main() {
   }
   validateCount(count);
 
+  const imageCount = shots?.length ?? count ?? 4;
+
   try {
     const resolvedRefs = [];
     for (const ref of references) {
@@ -306,15 +322,17 @@ async function main() {
       fail(`未返回 taskId: ${JSON.stringify(data)}`);
     }
 
+    const meta = { imageCount };
+
     if (nowait) {
       console.error(`[nowait] 任务已提交，taskId=${taskId}，跳过轮询`);
-      printAsyncResult(data);
+      printAsyncResult(data, meta);
       return;
     }
 
     console.error(`[sync] 开始轮询 taskId=${taskId}`);
     const final = await pollUntilDone(String(taskId));
-    printResult(final);
+    printResult(final, meta);
     if (final.progress !== "succeeded") process.exit(1);
   } catch (err) {
     fail(err instanceof Error ? err.message : String(err));
