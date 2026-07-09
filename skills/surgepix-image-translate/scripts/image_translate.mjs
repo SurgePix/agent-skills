@@ -1,26 +1,25 @@
 #!/usr/bin/env node
 /**
- * SurgePix 生成文章配图 CLI
+ * SurgePix 图片翻译 CLI
  *
  * 流程:
- *   1. 本地参考图 → 上传拿到 URL（可选，直接传 URL 则跳过）
- *   2. POST /tasks/generate-illustrations   (始终异步提交：API noWait=true，立即返回 taskId)
+ *   1. 本地图片 → 上传拿到 URL（直接传 URL 则跳过）
+ *   2. POST /tasks/image-translate
  *   3. 根据 --nowait 决定行为:
- *      - --nowait false（默认，同步）：脚本内部轮询 GET /tasks/{taskId} 直到 succeeded / failed
- *      - --nowait true（异步）：脚本立即返回 taskId 等任务信息，由 Agent 后续用 query-task 技能查询
+ *      - --nowait false（默认，同步）：API noWait=false，服务端等待完成后返回 download
+ *      - --nowait true（异步）：API noWait=true，立即返回 taskId，由 Agent 用 query-task 查询
  *
  * 用法:
- *   node generate_illustrations.mjs [--topic <text>] [--shots <json>]
- *                                   [--count <1-9>] [--reference <path-or-url> ...]
- *                                   [--session-id <id>] [--nowait <true|false>]
+ *   node image_translate.mjs <image-path-or-url> [<image2> ...]
+ *     [--language <code>] [--session-id <id>] [--nowait <true|false>]
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
- *   SURGEPIX_BASE_URL       由 surgepix-setup(init) 写入本地 .env 后从环境变量读取
+ *   SURGEPIX_BASE_URL       可选，默认 https://api.surgepix.ai/api
  *   SURGEPIX_UPLOAD_FOLDER  可选，默认 files
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
@@ -34,6 +33,7 @@ const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
 // 常量
 // ============================================================
 
+const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 600_000;
 const DEFAULT_USER_AGENT =
@@ -44,10 +44,15 @@ const DEFAULT_USER_AGENT =
 // 配置
 // ============================================================
 
-let config = { baseUrl: "", folder: "files", apiKey: "" };
+let config = { baseUrl: DEFAULT_BASE_URL, folder: "files", apiKey: "" };
 
 function initConfig() {
-  config = loadConfig();
+  loadConfig();
+  config = {
+    baseUrl: process.env.SURGEPIX_BASE_URL ?? DEFAULT_BASE_URL,
+    folder: process.env.SURGEPIX_UPLOAD_FOLDER ?? "files",
+    apiKey: process.env.SURGEPIX_API_KEY ?? "",
+  };
 }
 
 // ============================================================
@@ -66,7 +71,7 @@ function buildHeaders() {
   return headers;
 }
 
-async function apiRequest(method, urlPath, { body, timeout = 120_000 } = {}) {
+async function apiRequest(method, urlPath, { body, timeout = 300_000 } = {}) {
   const url = `${config.baseUrl}${urlPath}`;
   const headers = { ...buildHeaders() };
   if (body) {
@@ -90,19 +95,16 @@ async function apiRequest(method, urlPath, { body, timeout = 120_000 } = {}) {
 }
 
 // ============================================================
-// 上传本地参考图
+// 上传本地文件
 // ============================================================
 
-async function resolveReference(ref) {
-  if (ref.startsWith("http://") || ref.startsWith("https://")) {
-    return ref;
-  }
-  const resolved = path.resolve(ref);
+async function uploadLocalFile(imagePath) {
+  const resolved = path.resolve(imagePath);
   if (!existsSync(resolved)) {
-    throw new Error(`参考图文件不存在: ${resolved}`);
+    throw new Error(`文件不存在: ${resolved}`);
   }
   refreshUploadConfig();
-  console.error(`[upload] uploading reference ${resolved}`);
+  console.error(`[upload] uploading ${resolved}`);
   const result = await uploadFile(resolved);
   if (!result.url) {
     throw new Error(`上传成功但未返回 url: ${JSON.stringify(result)}`);
@@ -111,26 +113,30 @@ async function resolveReference(ref) {
   return result.url;
 }
 
-// ============================================================
-// 生成文章配图 API
-// ============================================================
-
-async function generateIllustrations(options) {
-  const { topic, shots, count, referenceImages, sessionId } = options;
-  const body = { noWait: true };
-  if (topic != null) body.topic = topic;
-  if (shots != null && shots.length > 0) body.shots = shots;
-  if (count != null) body.count = count;
-  if (referenceImages != null && referenceImages.length > 0) {
-    body.referenceImages = referenceImages;
+async function resolveImageUrl(input) {
+  if (input.startsWith("http://") || input.startsWith("https://")) {
+    return input;
   }
-  if (sessionId != null) body.sessionId = sessionId;
-  console.error(`[generate-illustrations] topic=${topic ?? "(shots mode)"}, count=${count ?? "auto"}`);
-  return apiRequest("POST", "/tasks/generate-illustrations", { body });
+  return uploadLocalFile(input);
 }
 
 // ============================================================
-// 轮询任务状态
+// 图片翻译 API
+// ============================================================
+
+async function translateImages(imageUrls, { language = "en", sessionId, noWait = false } = {}) {
+  const body = { imageUrls, language, noWait };
+  if (sessionId != null) {
+    body.sessionId = sessionId;
+  }
+  console.error(
+    `[image-translate] count=${imageUrls.length} language=${language} noWait=${noWait}`
+  );
+  return apiRequest("POST", "/tasks/image-translate", { body });
+}
+
+// ============================================================
+// 轮询任务状态（同步模式下若仍 processing 则兜底轮询）
 // ============================================================
 
 function sleep(ms) {
@@ -155,31 +161,20 @@ async function pollUntilDone(taskId) {
 // 输出结果
 // ============================================================
 
-function buildOutputMeta(imageCount) {
-  const count = imageCount ?? 1;
-  const isZip = count > 1;
-  return {
-    imageCount: count,
-    resultType: isZip ? "zip" : "image",
-    note: isZip
-      ? "API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"
-      : "API 返回单张图片下载地址",
-  };
-}
-
-function printResult(data, { imageCount } = {}) {
+function printResult(data, { imageCount = 1 } = {}) {
   const output = {
     ok: true,
     taskId: data.taskId,
     sessionId: data.sessionId,
     progress: data.progress,
     download: data.taskResult?.download ?? null,
-    ...buildOutputMeta(imageCount),
+    imageCount,
+    resultType: imageCount > 1 ? "zip" : "image",
   };
   console.log(JSON.stringify(output));
 }
 
-function printAsyncResult(data, { imageCount } = {}) {
+function printAsyncResult(data, { imageCount = 1 } = {}) {
   const taskId = data.taskId;
   const output = {
     ok: true,
@@ -188,7 +183,8 @@ function printAsyncResult(data, { imageCount } = {}) {
     sessionId: data.sessionId ?? null,
     progress: data.progress ?? "processing",
     download: data.taskResult?.download ?? null,
-    ...buildOutputMeta(imageCount),
+    imageCount,
+    resultType: imageCount > 1 ? "zip" : "image",
     hint: `任务已异步提交，尚未完成。请稍后用 surgepix-query-task 技能查询任务状态（单次查询，未完成则稍后再查），例如：node <skills-dir>/surgepix-query-task/scripts/query_task.mjs ${taskId}`,
   };
   console.log(JSON.stringify(output));
@@ -206,11 +202,8 @@ function fail(message) {
 function parseArgs() {
   const args = process.argv.slice(2);
   const parsed = {
-    topic: null,
-    shots: null,
-    shotsFile: null,
-    count: null,
-    references: [],
+    images: [],
+    language: "en",
     sessionId: null,
     nowait: false,
   };
@@ -225,64 +218,27 @@ function parseArgs() {
       } else {
         parsed.nowait = true;
       }
-    } else if (arg === "--topic" && i + 1 < args.length) {
-      parsed.topic = args[++i];
-    } else if (arg === "--shots" && i + 1 < args.length) {
-      parsed.shots = args[++i];
-    } else if (arg === "--shots-file" && i + 1 < args.length) {
-      parsed.shotsFile = args[++i];
-    } else if (arg === "--count" && i + 1 < args.length) {
-      parsed.count = Number(args[++i]);
-    } else if (arg === "--reference" && i + 1 < args.length) {
-      parsed.references.push(args[++i]);
+    } else if (arg === "--language" && i + 1 < args.length) {
+      parsed.language = args[++i];
     } else if (arg === "--session-id" && i + 1 < args.length) {
       parsed.sessionId = Number(args[++i]);
     } else if (arg === "-h" || arg === "--help") {
-      console.error("Usage: node generate_illustrations.mjs [--topic <text>] [--shots <json>] [--shots-file <path>]");
-      console.error("         [--count <1-9>] [--reference <path-or-url> ...]");
-      console.error("         [--session-id <id>] [--nowait <true|false>]");
+      console.error(
+        "Usage: node image_translate.mjs <image-path-or-url> [<image2> ...] [--language <code>] [--session-id <id>] [--nowait <true|false>]"
+      );
       console.error("");
-      console.error("  --topic <text>           文章主题或正文摘要（shots 为空时必填）");
-      console.error("  --shots <json>           逐张配图规格 JSON 数组（优先于 topic/count）");
-      console.error("  --shots-file <path>      逐张配图规格 JSON 文件路径");
-      console.error("  --count <1-9>            自动生成张数，默认 4（仅 topic 模式生效）");
-      console.error("  --reference <path-or-url> 参考图（本地路径自动上传，可重复传多个）");
-      console.error("  --session-id <id>        会话 ID，迭代调整时传入");
-      console.error("  --nowait <true|false>    false(默认)=同步，脚本内部轮询直到完成；true=异步，立即返回 taskId");
+      console.error("  <image-path-or-url>   本地图片路径或 URL，可传多个");
+      console.error("  --language <code>     目标语言，如 en、zh、ja，默认 en");
+      console.error("  --session-id <id>     会话 ID，迭代时传入");
+      console.error(
+        "  --nowait <true|false> false(默认)=同步，API 等待完成后返回 download；true=异步，立即返回 taskId"
+      );
       process.exit(0);
+    } else if (!arg.startsWith("--")) {
+      parsed.images.push(arg);
     }
   }
   return parsed;
-}
-
-function parseShots(shotsArg, shotsFile) {
-  if (shotsFile) {
-    const resolved = path.resolve(shotsFile);
-    if (!existsSync(resolved)) {
-      fail(`shots 文件不存在: ${resolved}`);
-    }
-    const content = readFileSync(resolved, "utf-8");
-    try {
-      return JSON.parse(content);
-    } catch (e) {
-      fail(`shots 文件 JSON 解析失败: ${e.message}`);
-    }
-  }
-  if (shotsArg) {
-    try {
-      return JSON.parse(shotsArg);
-    } catch (e) {
-      fail(`--shots JSON 解析失败: ${e.message}`);
-    }
-  }
-  return null;
-}
-
-function validateCount(count) {
-  if (count == null) return;
-  if (!Number.isInteger(count) || count < 1 || count > 9) {
-    fail(`--count 必须是 1-9 之间的整数，收到: ${count}`);
-  }
 }
 
 async function main() {
@@ -292,29 +248,21 @@ async function main() {
     fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
   }
 
-  const { topic, shots: shotsArg, shotsFile, count, references, sessionId, nowait } = parseArgs();
-
-  const shots = parseShots(shotsArg, shotsFile);
-
-  if (!topic && (!shots || shots.length === 0)) {
-    fail("缺少参数: 请至少提供 --topic 或 --shots/--shots-file");
+  const { images, language, sessionId, nowait } = parseArgs();
+  if (images.length === 0) {
+    fail("缺少参数: 请至少提供一张图片路径或 URL");
   }
-  validateCount(count);
-
-  const imageCount = shots?.length ?? count ?? 4;
 
   try {
-    const resolvedRefs = [];
-    for (const ref of references) {
-      resolvedRefs.push(await resolveReference(ref));
+    const imageUrls = [];
+    for (const input of images) {
+      imageUrls.push(await resolveImageUrl(input));
     }
 
-    const data = await generateIllustrations({
-      topic,
-      shots,
-      count,
-      referenceImages: resolvedRefs,
+    const data = await translateImages(imageUrls, {
+      language,
       sessionId,
+      noWait: nowait,
     });
 
     const taskId = data.taskId;
@@ -322,15 +270,21 @@ async function main() {
       fail(`未返回 taskId: ${JSON.stringify(data)}`);
     }
 
-    const meta = { imageCount };
+    const meta = { imageCount: imageUrls.length };
 
     if (nowait) {
-      console.error(`[nowait] 任务已提交，taskId=${taskId}，跳过轮询`);
+      console.error(`[nowait] 任务已提交，taskId=${taskId}，跳过等待`);
       printAsyncResult(data, meta);
       return;
     }
 
-    console.error(`[sync] 开始轮询 taskId=${taskId}`);
+    if (data.progress === "succeeded" || data.progress === "failed") {
+      printResult(data, meta);
+      if (data.progress !== "succeeded") process.exit(1);
+      return;
+    }
+
+    console.error(`[sync] 响应仍为 processing，开始轮询 taskId=${taskId}`);
     const final = await pollUntilDone(String(taskId));
     printResult(final, meta);
     if (final.progress !== "succeeded") process.exit(1);
@@ -344,4 +298,4 @@ if (isMain) {
   main();
 }
 
-export { generateIllustrations, pollUntilDone, resolveReference };
+export { translateImages, pollUntilDone, resolveImageUrl };

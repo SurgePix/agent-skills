@@ -1,6 +1,6 @@
 ---
 name: surgepix-generate-illustrations
-description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Do NOT use for 小红书/RED/竖版套图/笔记轮播 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before choosing a skill.
+description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs (img1.png, 第1张, etc.). Do NOT use for 小红书/RED/竖版套图 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Illustrations
@@ -71,7 +71,7 @@ node "<skills-dir>/surgepix-generate-illustrations/scripts/generate_illustration
   --topic "内容生产闭环：从选题、写作到分发与复盘" \
   --count 4
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://...illustrations.zip"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://...illustrations.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
 #   ← Save sessionId for retries
 ```
 
@@ -159,8 +159,14 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://...illustrations.zip"}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://...illustrations.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
 ```
+
+> **CRITICAL — 禁止编造单张图片链接**
+> - API 的 `taskResult` **只有** `download` 一个字段，没有单张图片 URL 列表。
+> - `resultType: "zip"`（或 `imageCount > 1`）时：**只展示 `download` ZIP 链接**，告知用户下载 ZIP 后解压获取各张图。
+> - **绝对禁止**根据 `imageCount`、主题或 shots 推测并编造 `image1.png`、`image2.png` 等单张链接。
+> - `resultType: "image"`（`imageCount === 1`）时：`download` 才是单张图片 URL，也只展示这一个链接。
 
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:
 
@@ -175,9 +181,16 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 ```
 
 ### Step 4: Present result
-   - **On success:** Show the download URL. **Always show `sessionId`** (note: it is a number type, e.g. `123`) so the user can pass it in a retry if needed.
-     - If only 1 image: download URL is a single image
-     - If multiple images: download URL is a ZIP file containing all illustrations
+
+> **CRITICAL — 禁止编造单张图片链接（幻觉高发区）**
+> - 脚本输出 `resultType: "zip"` 或 `imageCount > 1` 时，API **只返回一个 ZIP 的 `download` 链接**，没有单张图片 URL。
+> - **只向用户展示 `download` 这一个 ZIP 链接**，说明「共 N 张图，请下载 ZIP 解压查看」。
+> - **绝对禁止**编造类似「第 1 张：https://.../img1.png」「第 2 张：https://.../img2.png」的链接——这些 URL 不存在。
+> - 若用户需要单张直链，只能重新以 `--count 1` 或 `--shots` 只含 1 条重新生成。
+
+- **On success:** Show **only** the `download` URL from script output. **Always show `sessionId`** (note: it is a number type, e.g. `123`) so the user can pass it in a retry if needed.
+  - `resultType: "image"` (`imageCount === 1`): `download` is a single image URL
+  - `resultType: "zip"` (`imageCount > 1`): `download` is a ZIP file — **do not list per-image URLs**
    - **On failure:** Report the `error` field. Common causes:
      - Missing required parameter — neither `--topic` nor `--shots`/`--shots-file` provided
      - `--count` out of range (must be 1–9)
@@ -226,6 +239,8 @@ All generated illustrations are:
 - If `--session-id` is omitted, the platform auto-creates a new session for the run.
 - NEVER pass local reference image paths to the API — script handles upload internally
 - NEVER invent download URLs — only use the `download` value from the output
+- **NEVER invent per-image URLs when `resultType` is `zip`** — the API does not return individual image links; only the ZIP `download` exists. Do not fabricate `img1.png`, `img2.png`, or numbered image URLs.
+- When `resultType: "zip"`, present only the ZIP `download` link and tell the user to unzip for individual images
 - NEVER echo auth tokens in logs or output
 - The download URL is valid for **24 hours**; download before it expires.
 - Reference image supported formats: `JPEG`, `JPG`, `PNG`, `WEBP` — max **20MB** each.
