@@ -7,6 +7,10 @@ description: Use SurgePix API to remove image background, returning a transparen
 
 Remove the background from an image and return a transparent PNG using the platform API. Use when the user asks to remove background, cut out a subject, make an image transparent, or create a PNG with no background.
 
+## Language consistency
+
+This skill does not generate on-image text. Reply to the user in the **same language they used** in their request.
+
 ---
 
 ## What the Skill Does

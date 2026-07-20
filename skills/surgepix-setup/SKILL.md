@@ -9,6 +9,10 @@ Pre-flight check and guided setup. **Run this before any other SurgePix skill.**
 
 All SurgePix skills share one portable config: a `.env` file. Scripts auto-load it regardless of which agent you use (Claude Code, Codex, Cursor, Gemini CLI, OpenClaw, etc.).
 
+## Language consistency
+
+Reply to the user in the **same language they used** in their request. All other SurgePix skills follow the same rule for both agent replies and generated on-image text.
+
 ## When to use
 
 - **Automatically** before upload or remove-background if env is not configured

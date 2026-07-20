@@ -1,11 +1,25 @@
 ---
 name: surgepix-generate-poster
-description: Generate an event poster (PNG) using the SurgePix API, returning a download URL. Use when the user says "generate poster", "生成海报", "做个海报", "make a poster", "create a poster", or wants a poster from event info (name, date, venue).
+description: Generate an event poster (PNG) using the SurgePix API, returning a download URL. Use when the user says "generate poster", "生成海报", "做个海报", "make a poster", "create a poster", or wants a poster from event info (name, date, venue). Language: match user's conversation language for all on-poster text (English prompt → English event-name/venue/description).
 ---
 
 # SurgePix Generate Poster
 
 Generate an event poster (PNG) from event info (name, date, venue) plus optional styling and reference images, and get a download URL.
+
+## Language consistency
+
+Match the **user's conversation language** for all text printed on the poster — unless the user explicitly requests another language.
+
+| User writes in | Action |
+|----------------|--------|
+| English | Pass `--event-name`, `--venue`, `--description` in English; add to `--prompt`: `All visible poster text must be in English` |
+| 中文 | Pass printed fields in Chinese; add to `--prompt`: `海报上所有可见文字必须使用中文` |
+| 日本語 | Pass printed fields in Japanese; add to `--prompt`: `ポスター上のすべての文字は日本語` |
+
+- This skill has **no `--language` flag** — language is controlled via printed text fields and `--prompt`.
+- **Do not use Chinese** for `--event-name` / `--venue` / `--description` when the user prompts in English.
+- Reply to the user in the same language they used in their request.
 
 ## When to use
 
@@ -232,4 +246,5 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 - If the user provides a brand color, pass it via `--prompt`, e.g. `--prompt "Brand color #FF5A00, tech style, dark background"`. Do not put creative direction in `--description` — that field is reserved for text printed on the poster.
 - The poster download URL is valid for **24 hours**; download before it expires.
 - To generate multilingual versions of the same poster, run the command separately for each language, adjusting `--event-name`, `--venue`, and `--description` accordingly.
+- **Language:** Write all on-poster text fields in the user's conversation language; never default to Chinese when the user writes in English.
 - Reference image supported formats: `JPEG`, `JPG`, `PNG`, `WEBP` — max **20MB** each.

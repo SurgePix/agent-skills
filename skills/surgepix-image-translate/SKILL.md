@@ -1,11 +1,24 @@
 ---
 name: surgepix-image-translate
-description: Translate text on images to a target language using SurgePix API, keeping the background unchanged. Use when the user says "translate image", "图片翻译", "翻译图片", "translate text on image", "把图片翻译成英文/中文", or wants to localize image text. Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs.
+description: Translate text on images to a target language using SurgePix API, keeping the background unchanged. Use when the user says "translate image", "图片翻译", "翻译图片", "translate text on image", "把图片翻译成英文/中文", or wants to localize image text. Language: always pass --language for target on-image text; infer from user request (English user without target → en, 中文 → zh). Output rule: ZIP when multiple images — show ONLY download URL.
 ---
 
 # Image Translate — Translate Text on Images
 
 Translate text on one or more images to a target language while preserving the background, using the platform API. Use when the user asks to translate image text, localize a poster/screenshot, or convert on-image copy to another language.
+
+## Language consistency
+
+`--language` is the **target language for on-image text**, not the agent's reply language.
+
+| Priority | Rule |
+|----------|------|
+| 1 | User explicitly names a target (e.g. "translate to English", "翻译成日文") → use that language code |
+| 2 | User does not specify target → infer from intent: English request → `--language en`; 中文请求 → `--language zh`; 日本語 → `--language ja` |
+| 3 | Ambiguous → ask the user which target language they want |
+
+- **Always pass `--language`** — do not rely on the script default (`en`) without checking user intent.
+- Reply to the user in the same language they used in their request (agent reply ≠ `--language` target).
 
 ---
 
@@ -100,14 +113,14 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 
 - **Local file(s)** → script uploads automatically, then calls API
 - **URL(s)** → script uses them directly
-- Ask the user for the **target language** if not specified (default: `en`). Common codes: `en`, `zh`, `ja`.
+- Ask the user for the **target language** if not specified. Infer from user language or explicit request (see Language consistency); do not blindly default to `en`.
 
 ### Step 2: Collect inputs
 
 - The user must provide at least one image. Accept either:
   - **Local file path(s)** (e.g. `./poster.png`)
   - **URL(s)** pointing to images
-- **Language** (optional): target language code, default `en`.
+- **Language** (required in practice): target language code — `en`, `zh`, `ja`, etc. Always pass based on user intent (see Language consistency).
 - **Session ID** (optional): if the user is retrying, use the `sessionId` from the last run. Omit on first run — the platform auto-creates a new session.
 - Validate each file before submitting:
   - Supported formats: `JPEG`, `JPG`, `PNG`, `WEBP`
@@ -172,7 +185,7 @@ node "<skills-dir>/surgepix-image-translate/scripts/image_translate.mjs" \
 | Parameter                | Required | Default      | Description                                                                 |
 |--------------------------|----------|--------------|-----------------------------------------------------------------------------|
 | `<file path or URL>`     | Yes      | —            | **Positional argument(s).** One or more local paths or image URLs           |
-| `--language <code>`      | No       | `en`         | Target language, e.g. `en`, `zh`, `ja`                                      |
+| `--language <code>`      | Yes*     | user intent  | Target language for on-image text, e.g. `en`, `zh`, `ja`. Always pass — match explicit request or user's language |
 | `--session-id <id>`      | No       | auto-created | Omit on first run; provide on retries to group iterations in one session    |
 | `--nowait <true\|false>` | No       | `false`      | `false` = sync: API waits and returns final `download`. `true` = async: returns `taskId`; resolve via **surgepix-query-task** |
 

@@ -1,11 +1,25 @@
 ---
 name: surgepix-generate-xhs
-description: Generate Xiaohongshu (RED) vertical carousel image sets (cover + content pages) via SurgePix. Use when the user wants 小红书套图, 小红书笔记图, 竖版轮播, RED post images, or mentions 小红书/RED/笔记. Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image or per-page URLs (封面图, 第2张, etc.). Do NOT use for 公众号/博客/推文横版配图 — use surgepix-generate-illustrations. If the user only says 配图 without platform, ask first.
+description: Generate Xiaohongshu (RED) vertical carousel image sets (cover + content pages) via SurgePix. Use when the user wants 小红书套图, 小红书笔记图, 竖版轮播, RED post images, or mentions 小红书/RED/笔记. Language: always pass --language matching user (English→en, 中文→zh, 日本語→jp). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 公众号/博客/推文横版配图 — use surgepix-generate-illustrations. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Xiaohongshu Images
 
 Generate Xiaohongshu (小红书) **vertical** carousel image sets (cover + content pages) from per-page copy descriptions plus optional reference images, and get a download URL.
+
+## Language consistency
+
+Match the **user's conversation language** for on-image text and `--prompt` copy — unless the user explicitly requests another language.
+
+| User writes in | Pass `--language` | Write `--prompt` in |
+|----------------|-------------------|---------------------|
+| English | `en` | English |
+| 中文 | `zh` | Chinese |
+| 日本語 | `jp` | Japanese |
+
+- **Always pass `--language`** — do not omit it. If omitted, the API may default to Chinese on-image text.
+- **Do not default to `--language zh`** when the user prompts in English.
+- Reply to the user in the same language they used in their request.
 
 ## Skill router (read first)
 
@@ -163,7 +177,7 @@ At least one `--prompt` is required. Repeat `--prompt` for each page when `count
 | **Prompt list** | Yes | API `prompt: list(string)`. CLI: repeatable `--prompt`. Index 0 = cover; 1..N-1 = content pages. Length must equal `count`. |
 | **Count** | No | Default = number of `--prompt` values (or `1` if only one prompt). Range `1–16`. `1` = cover only; `N>1` = 1 cover + `(N-1)` content images. |
 | **Style** | No | `modern` / `vintage` / `minimalist` / `bold`. Default `modern`. See **Preset Styles**. |
-| **Language** | No | Text on images: `zh` / `en` / `jp`. |
+| **Language** | No | Text on images: `zh` / `en` / `jp`. **Required in practice** — set from user's conversation language (see Language consistency). |
 | **Reference image** | No | Local path or URL; script uploads automatically. Repeatable. Formats: JPEG, JPG, PNG, WEBP — max **20MB** each. |
 | **Session ID** | No | For iteration, pass `sessionId` (number) from the last run. Omit on first run — platform auto-creates a session. |
 
@@ -191,7 +205,7 @@ node "<skills-dir>/surgepix-generate-xhs/scripts/generate_xhs.mjs" \
 | `--prompt <text>` | Per-page topic / copy (required, repeatable). Maps to API `prompt: list(string)`. |
 | `--count <1-16>` | Total images; default = `--prompt` count. Must equal number of prompts (unless only 1 prompt, then auto-repeat). |
 | `--style <name>` | Visual style: `modern` / `vintage` / `minimalist` / `bold` |
-| `--language <code>` | Text language on images: `zh` / `en` / `jp` |
+| `--language <code>` | On-image text language: `zh` / `en` / `jp`. **Always set** to match user's conversation language. |
 | `--reference <path-or-url>` | Reference image (local path auto-uploaded; repeatable for multiple files) |
 | `--session-id <id>` | Session ID; pass the `sessionId` (number type) from a previous run to iterate |
 | `--nowait <true\|false>` | Wait mode, default `false` (see below) |
@@ -253,7 +267,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 | `--prompt <text>`      | Yes      | —            | Per-page copy; repeatable. API field `prompt` is `list(string)`. Index 0 = cover. |
 | `--count <1-16>`       | No       | prompt count | Total images. `1` = cover only; `N>1` = 1 cover + (N-1) content images. Must equal `--prompt` count unless only 1 prompt (auto-repeat). |
 | `--style <name>`       | No       | `modern`     | Visual style: `modern` / `vintage` / `minimalist` / `bold`. See **Preset Styles** |
-| `--language <code>`    | No       | —            | Language for text on images: `zh` / `en` / `jp`                              |
+| `--language <code>`    | No       | —            | On-image text: `zh` / `en` / `jp`. **Always pass** — match user's conversation language |
 | `--reference <path-or-url>` | No  | —            | Reference image (local path auto-uploaded; repeatable for multiple files). Supported formats: `JPEG`, `JPG`, `PNG`, `WEBP` — max **20MB** each |
 | `--session-id <id>`    | No       | auto-created | Omit on first run (platform creates a new session and returns it in stdout); provide on subsequent runs to group iterations in the same session. Note: `sessionId` is a number type, not string |
 | `--nowait <true\|false>` | No     | `false`      | `false` = synchronous: script polls internally and returns the final `download`. `true` = asynchronous: returns `taskId` immediately; resolve later via the **surgepix-query-task** skill |
@@ -291,3 +305,4 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 - The download URL is valid for **24 hours**; download before it expires.
 - Reference image supported formats: `JPEG`, `JPG`, `PNG`, `WEBP` — max **20MB** each.
 - When `count > 1`, the download is a ZIP containing all images (cover first, then content images in order).
+- **Language:** Always pass `--language` matching the user's conversation language; English prompt → `--language en`, 中文 → `--language zh`.

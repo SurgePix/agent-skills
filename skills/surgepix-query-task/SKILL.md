@@ -7,6 +7,10 @@ description: Query or poll SurgePix async task status and get task results (down
 
 Query task progress via `GET /tasks/{taskId}` once and print the current status. This skill does **not** poll — it returns the task's current state in a single call; re-run it later to check again.
 
+## Language consistency
+
+This skill does not generate content. Reply to the user in the **same language they used** in their request. When presenting a ZIP `download` URL from upstream skills, do not fabricate per-image links.
+
 ## When to use
 
 - User has a `taskId` from an async SurgePix API (e.g. remove-background / generate-poster / generate-presentation / image-translate 在 `--nowait true` 时返回的 `taskId`)

@@ -1,11 +1,25 @@
 ---
 name: surgepix-generate-illustrations
-description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs (img1.png, 第1张, etc.). Do NOT use for 小红书/RED/竖版套图 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask first.
+description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Language: match user's conversation language for on-image text (English prompt → English labels; 中文 → 中文). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 小红书/RED/竖版套图 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Illustrations
 
 Generate **16:9 horizontal** article illustrations (hand-drawn style, fixed 1536×864) from a topic or per-shot specifications, and get a download URL.
+
+## Language consistency
+
+Match the **user's conversation language** for on-image handwritten labels and all text parameters — unless the user explicitly requests another language.
+
+| User writes in | Action |
+|----------------|--------|
+| English | Write `--topic`, shot `theme` / `labels` / `coreIdea` in English; add to topic: `All on-image handwritten labels and text must be in English` |
+| 中文 | Write text parameters in Chinese; add: `所有图片上的手写标注和文字必须使用中文` |
+| 日本語 | Write text parameters in Japanese; add: `画像内の手書きラベルと文字はすべて日本語` |
+
+- This skill has **no `--language` flag** — language is controlled entirely via `--topic`, `--shots`, and shot `labels`.
+- **Do not default to Chinese labels** when the user prompts in English.
+- Reply to the user in the same language they used in their request.
 
 ## Skill router (read first)
 
@@ -131,7 +145,7 @@ At least one of `--topic` or `--shots`/`--shots-file` must be provided.
 | `coreIdea` | No | Core message this image should convey |
 | `composition` | No | Specific scene description |
 | `elements` | No | Suggested visual elements (string array) |
-| `labels` | No | Suggested Chinese handwritten annotation labels (string array) |
+| `labels` | No | Suggested handwritten annotation labels (string array; **use the user's language**) |
 
 ### Step 2: Run generate-illustrations
 
@@ -221,7 +235,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 All generated illustrations are:
 - **Aspect ratio:** 16:9 horizontal
 - **Resolution:** 1536×864 pixels
-- **Style:** Hand-drawn illustration style with Chinese handwritten annotations
+- **Style:** Hand-drawn illustration style with handwritten annotations in the **user's language**
 
 ---
 
@@ -247,3 +261,4 @@ All generated illustrations are:
 - When multiple images are generated, the download is a ZIP containing all illustrations in order.
 - For complex per-shot specifications, prefer `--shots-file` over inline `--shots` to avoid shell escaping issues.
 - Each shot's `theme` field is required; other fields (`structureType`, `coreIdea`, `composition`, `elements`, `labels`) are optional but recommended for precise control.
+- **Language:** Write `--topic` and shot fields in the user's language; never default on-image text to Chinese when the user writes in English.

@@ -1,11 +1,25 @@
 ---
 name: surgepix-generate-presentation
-description: Generate a PowerPoint (PPTX) presentation using the SurgePix API, returning a download URL. Use when the user says "generate ppt", "生成PPT", "做一个演示文稿", "make slides", "create a presentation", or wants slides from a topic or outline.
+description: Generate a PowerPoint (PPTX) presentation using the SurgePix API, returning a download URL. Use when the user says "generate ppt", "生成PPT", "做一个演示文稿", "make slides", "create a presentation", or wants slides from a topic or outline. Language: always pass --language matching user (English→en, 中文→zh, 日本語→ja).
 ---
 
 # SurgePix Generate Presentation
 
 Generate a presentation (PPTX) from a topic prompt and/or outline documents, and get a download URL.
+
+## Language consistency
+
+Match the **user's conversation language** for slide content — unless the user explicitly requests another language.
+
+| User writes in | Pass `--language` | Write `--prompt` in |
+|----------------|-------------------|---------------------|
+| English | `en` | English |
+| 中文 | `zh` | Chinese |
+| 日本語 | `ja` | Japanese |
+
+- **Always pass `--language`** — do not rely on API auto-detect alone when the user's language is clear.
+- **Do not default to Chinese slides** when the user prompts in English.
+- Reply to the user in the same language they used in their request.
 
 ## When to use
 
@@ -111,7 +125,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
    - **Slide count** (**required**, range `5–30`): use `--n` (integer)
    - **Aspect ratio** (optional, default `16:9`): `16:9` (widescreen) / `4:3` (standard)
    - **Style** (optional): layout and typography preset. Choose from: `modern` / `corporate` / `creative` / `minimal` / `tech`. Use as a quick shorthand for visual direction; omit if `--prompt` already describes the style. See **Preset Styles** section below for detailed descriptions.
-   - **Language** (optional, default: auto-detect from user's input language): `zh` / `en` / `ja`
+   - **Language** (required in practice): match user's conversation language — `zh` / `en` / `ja`. Always pass `--language`; do not omit when user language is clear.
    - **Session ID** (optional): if the user is iterating on a previous result, ask them to provide the `sessionId` (number type) printed by the last run. If this is a fresh request, omit it — the platform auto-creates a new session.
 
 - **Local outline file** → script uploads automatically, then calls API
@@ -213,3 +227,4 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 - NEVER pass local outline paths to the API — script handles upload internally
 - NEVER invent download URLs — only use the `download` value from the output
 - NEVER echo auth tokens in logs or output
+- **Language:** Always pass `--language` matching the user's conversation language; English prompt → `--language en`, 中文 → `--language zh`.

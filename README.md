@@ -35,6 +35,19 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 
 > **xhs vs illustrations:** If the user only says「配图」, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before picking a skill.
 
+## Language consistency
+
+**Match the user's conversation language** for agent replies and for all on-image / on-slide text — unless the user explicitly requests another language.
+
+| User writes in | Skills with `--language` | Skills without `--language` |
+|----------------|--------------------------|------------------------------|
+| English | Pass `--language en` (xhs: `en`; presentation: `en`) | Write text params in English; add language hint to `--topic` / `--prompt` |
+| 中文 | Pass `--language zh` | Write text params in Chinese |
+| 日本語 | Pass `--language jp` / `ja` | Write text params in Japanese |
+
+- **Do not default to Chinese on-image text** when the user prompts in English.
+- Applies to: `generate-illustrations`, `generate-xhs`, `generate-poster`, `generate-presentation`, `image-translate`.
+
 > Most task-producing skills expose a `--nowait` flag. With `--nowait false` (default) the script returns the final `download` URL in one call (image-translate waits on the API; others poll internally). With `--nowait true` the API returns a `taskId` immediately, which you resolve via the `surgepix-query-task` skill.
 
 ### Install

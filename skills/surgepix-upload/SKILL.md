@@ -7,6 +7,10 @@ description: Upload local files to SurgePix cloud storage and return a public HT
 
 Upload a local file to SurgePix storage and get back a public CDN URL.
 
+## Language consistency
+
+This skill does not generate on-image text. Reply to the user in the **same language they used** in their request.
+
 ## When to use
 
 - User says "upload this file", "get a URL for this image", "上传", "传到线上"
