@@ -117,7 +117,7 @@ async function resolveReference(ref) {
 
 async function generateIllustrations(options) {
   const { topic, shots, count, referenceImages, sessionId } = options;
-  const body = { noWait: true };
+  const body = { noWait: true, source: "skill" };
   if (topic != null) body.topic = topic;
   if (shots != null && shots.length > 0) body.shots = shots;
   if (count != null) body.count = count;

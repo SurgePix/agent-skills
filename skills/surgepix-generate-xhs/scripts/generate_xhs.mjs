@@ -117,7 +117,7 @@ async function resolveReference(ref) {
 
 async function generateXhs(options) {
   const { prompt, count, style, language, urls, sessionId } = options;
-  const body = { noWait: true, prompt };
+  const body = { noWait: true, source: "skill", prompt };
   if (count != null) body.count = count;
   if (style != null) body.style = style;
   if (language != null) body.language = language;

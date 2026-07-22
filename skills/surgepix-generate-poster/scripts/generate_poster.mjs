@@ -129,7 +129,7 @@ async function generatePoster(options) {
     sessionId,
   } = options;
   // noWait 写死 true，Agent 无需也无法传递该参数
-  const body = { noWait: true, eventName, date, venue };
+  const body = { noWait: true, source: "skill", eventName, date, venue };
   if (prompt != null) body.prompt = prompt;
   if (description != null) body.description = description;
   if (style != null) body.style = style;

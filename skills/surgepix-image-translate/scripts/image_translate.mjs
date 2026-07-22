@@ -125,7 +125,7 @@ async function resolveImageUrl(input) {
 // ============================================================
 
 async function translateImages(imageUrls, { language = "en", sessionId, noWait = false } = {}) {
-  const body = { imageUrls, language, noWait };
+  const body = { imageUrls, language, noWait, source: "skill" };
   if (sessionId != null) {
     body.sessionId = sessionId;
   }

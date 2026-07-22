@@ -112,7 +112,7 @@ async function uploadLocalFile(imagePath) {
 
 // 始终异步提交：去背景接口 noWait=false 表示立即返回 taskId（异步），由脚本/Agent 后续轮询
 async function removeBackground(fileUrl, { sessionId } = {}) {
-  const body = { fileUrl, noWait: false };
+  const body = { fileUrl, noWait: false, source: "skill" };
   if (sessionId != null) {
     body.sessionId = sessionId;
   }

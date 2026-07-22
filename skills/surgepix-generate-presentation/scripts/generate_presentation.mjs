@@ -117,7 +117,7 @@ async function resolveOutline(outline) {
 
 async function generatePresentation(options) {
   const { prompt, outlines, n, aspectRatio, style, language, sessionId } = options;
-  const body = { noWait: true };
+  const body = { noWait: true, source: "skill" };
   if (prompt != null) body.prompt = prompt;
   if (outlines != null && outlines.length > 0) body.outlines = outlines;
   if (n != null) body.n = n;
