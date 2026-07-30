@@ -6,7 +6,7 @@
  *   node check_env.mjs
  *
  * Output (stdout, JSON):
- *   {"ok":true,"configured":true,"sources":[".env"],"baseUrl":"...","apiKeyPreview":"sk-abc...xyz"}
+ *   {"ok":true,"configured":true,"sources":[".env"],"baseUrl":"..."}
  *   {"ok":true,"configured":false,"sources":[],"hint":"Create .env with SURGEPIX_API_KEY=..."}
  *
  * Exit code: 0 if configured, 1 if not
@@ -27,7 +27,6 @@ if (status.configured) {
       configured: true,
       sources: status.sources,
       baseUrl: status.baseUrl,
-      apiKeyPreview: status.apiKeyPreview,
     }),
   );
   process.exit(0);

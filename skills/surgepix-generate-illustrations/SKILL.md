@@ -1,6 +1,7 @@
 ---
 name: surgepix-generate-illustrations
-description: Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Language: match user's conversation language for on-image text (English prompt → English labels; 中文 → 中文). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 小红书/RED/竖版套图 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask first.
+description: >-
+  Generate 16:9 horizontal article illustrations (1536×864, hand-drawn style) via SurgePix for blogs, WeChat Official Account articles, and tweets. Use when the user wants 文章配图, 公众号配图, 博客插图, 推文配图, or horizontal editorial illustrations. Language: match user's conversation language for on-image text (English prompt → English labels; 中文 → 中文). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 小红书/RED/竖版套图 — use surgepix-generate-xhs. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Illustrations

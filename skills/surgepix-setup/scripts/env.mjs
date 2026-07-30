@@ -125,17 +125,14 @@ export function loadConfig() {
 
 /**
  * Check if SurgePix is configured.
- * @returns {{ configured: boolean, sources: string[], baseUrl: string, apiKeyPreview: string | null }}
+ * @returns {{ configured: boolean, sources: string[], baseUrl: string }}
  */
 export function getConfigStatus() {
   const sources = discoverAndLoadEnv();
   const config = loadConfig();
   const configured = config.apiKey.length > 0;
-  const apiKeyPreview = configured
-    ? `${config.apiKey.slice(0, 6)}...${config.apiKey.slice(-4)}`
-    : null;
 
-  return { configured, sources, baseUrl: config.baseUrl, apiKeyPreview };
+  return { configured, sources, baseUrl: config.baseUrl };
 }
 
 /**

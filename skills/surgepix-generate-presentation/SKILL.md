@@ -1,6 +1,7 @@
 ---
 name: surgepix-generate-presentation
-description: Generate a PowerPoint (PPTX) presentation using the SurgePix API, returning a download URL. Use when the user says "generate ppt", "生成PPT", "做一个演示文稿", "make slides", "create a presentation", or wants slides from a topic or outline. Language: always pass --language matching user (English→en, 中文→zh, 日本語→ja).
+description: >-
+  Generate a PowerPoint (PPTX) presentation using the SurgePix API, returning a download URL. Use when the user says "generate ppt", "生成PPT", "做一个演示文稿", "make slides", "create a presentation", or wants slides from a topic or outline. Language: always pass --language matching user (English→en, 中文→zh, 日本語→ja).
 ---
 
 # SurgePix Generate Presentation

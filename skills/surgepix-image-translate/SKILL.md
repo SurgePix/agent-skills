@@ -1,6 +1,7 @@
 ---
 name: surgepix-image-translate
-description: Translate text on images to a target language using SurgePix API, keeping the background unchanged. Use when the user says "translate image", "图片翻译", "翻译图片", "translate text on image", "把图片翻译成英文/中文", or wants to localize image text. Language: always pass --language for target on-image text; infer from user request (English user without target → en, 中文 → zh). Output rule: ZIP when multiple images — show ONLY download URL.
+description: >-
+  Translate text on images to a target language using SurgePix API, keeping the background unchanged. Use when the user says "translate image", "图片翻译", "翻译图片", "translate text on image", "把图片翻译成英文/中文", or wants to localize image text. Language: always pass --language for target on-image text; infer from user request (English user without target → en, 中文 → zh). Output rule: ZIP when multiple images — show ONLY download URL.
 ---
 
 # Image Translate — Translate Text on Images

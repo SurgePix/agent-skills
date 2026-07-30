@@ -1,6 +1,7 @@
 ---
 name: surgepix-generate-xhs
-description: Generate Xiaohongshu (RED) vertical carousel image sets (cover + content pages) via SurgePix. Use when the user wants 小红书套图, 小红书笔记图, 竖版轮播, RED post images, or mentions 小红书/RED/笔记. Language: always pass --language matching user (English→en, 中文→zh, 日本語→jp). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 公众号/博客/推文横版配图 — use surgepix-generate-illustrations. If the user only says 配图 without platform, ask first.
+description: >-
+  Generate Xiaohongshu (RED) vertical carousel image sets (cover + content pages) via SurgePix. Use when the user wants 小红书套图, 小红书笔记图, 竖版轮播, RED post images, or mentions 小红书/RED/笔记. Language: always pass --language matching user (English→en, 中文→zh, 日本語→jp). Output rule: API returns only ONE download URL — single image = image URL; multiple images = ZIP URL (resultType zip). When ZIP, show ONLY that download link; NEVER fabricate per-image URLs. Do NOT use for 公众号/博客/推文横版配图 — use surgepix-generate-illustrations. If the user only says 配图 without platform, ask first.
 ---
 
 # SurgePix Generate Xiaohongshu Images

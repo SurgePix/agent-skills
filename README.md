@@ -124,7 +124,7 @@ User request (upload / remove-background)
         │
         no
         ▼
-  surgepix-setup ── write .env ──► check_env.mjs ──► run skill script
+  surgepix-setup ── guide user to configure .env ──► check_env.mjs ──► run skill script
 ```
 
 ## Environment Variables

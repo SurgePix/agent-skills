@@ -30,7 +30,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Configured** (exit 0):
 
 ```json
-{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"https://...","apiKeyPreview":"sk-abc...xyz"}
+{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"https://..."}
 ```
 
 → Tell user env is ready, proceed with the original task.
@@ -43,7 +43,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 
 → Continue to Step 2.
 
-### Step 2: Guide user to get API Key
+### Step 2: Guide user to configure API Key themselves
 
 > SurgePix API Key is not configured.
 >
@@ -51,31 +51,33 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 > 1. Sign in to [SurgePix Console](https://surgepix.ai)
 > 2. Go to Account Settings → API Keys
 > 3. Create a new key and copy the Bearer Token
+>
+> **How to configure (do this yourself — do not paste the key into chat):**
+> 1. In the project root: `cp .env.example .env` (if `.env` does not exist yet)
+> 2. Edit `.env` locally and set `SURGEPIX_API_KEY=<your-token>`
+> 3. Or export in your shell: `export SURGEPIX_API_KEY=<your-token>`
+>
+> Tell the agent when you are done so it can re-check.
 
-Ask: "Please provide your API Key and I'll configure it."
+**NEVER** ask the user to paste their API key into the chat.
+**NEVER** accept an API key from the user and write it into `.env` (or any file) yourself.
+**NEVER** interpolate a user-provided key into shell commands, heredocs, or tool arguments.
 
-### Step 3: Write `.env` (portable, works on all agents)
+### Step 3: Verify after user configures (also initializes `SURGEPIX_BASE_URL`)
 
-After user provides the key, write `.env` in the project root:
-
-```bash
-cat > .env << 'EOF'
-SURGEPIX_API_KEY=<user-provided-key>
-SURGEPIX_UPLOAD_FOLDER=files
-EOF
-```
-
-`SURGEPIX_API_KEY` is the **only required config**. Do **not** hardcode the API base URL here — `check_env.mjs` (Step 4) writes `SURGEPIX_BASE_URL` into `.env` automatically if it is missing, and every other skill simply reads it from the environment.
-
-### Step 4: Verify (also initializes `SURGEPIX_BASE_URL`)
+After the user confirms they have configured the key, re-run:
 
 ```bash
 node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 ```
 
-This step also ensures `SURGEPIX_BASE_URL` exists in your local `.env` (writing the environment default the first time). Must exit 0. Then proceed with the user's original task.
+This step also ensures `SURGEPIX_BASE_URL` exists in the local `.env` (writing the environment default the first time). Must exit 0. Then proceed with the user's original task.
 
-### Step 5: Protect secrets
+If still not configured, remind the user of Step 2 and wait — do not collect the key via chat.
+
+`SURGEPIX_API_KEY` is the **only required config**. Do **not** hardcode the API base URL — `check_env.mjs` writes `SURGEPIX_BASE_URL` into `.env` automatically if it is missing, and every other skill simply reads it from the environment.
+
+### Step 4: Protect secrets
 
 ```bash
 grep -q "^\.env$" .gitignore 2>/dev/null || echo ".env" >> .gitignore
@@ -90,7 +92,8 @@ grep -q "^\.env$" .gitignore 2>/dev/null || echo ".env" >> .gitignore
 
 ## Rules
 
-- NEVER echo the full API key after configuration
+- NEVER ask for, accept, echo, or write the API key from chat/tool input
 - NEVER commit `.env` to git
 - Always use `.env` as primary config (not platform-specific files)
+- Only verify whether `SURGEPIX_API_KEY` is present via `check_env.mjs`
 - After setup, immediately proceed with the user's original task

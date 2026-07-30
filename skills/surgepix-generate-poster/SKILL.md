@@ -1,6 +1,7 @@
 ---
 name: surgepix-generate-poster
-description: Generate an event poster (PNG) using the SurgePix API, returning a download URL. Use when the user says "generate poster", "生成海报", "做个海报", "make a poster", "create a poster", or wants a poster from event info (name, date, venue). Language: match user's conversation language for all on-poster text (English prompt → English event-name/venue/description).
+description: >-
+  Generate an event poster (PNG) using the SurgePix API, returning a download URL. Use when the user says "generate poster", "生成海报", "做个海报", "make a poster", "create a poster", or wants a poster from event info (name, date, venue). Language: match user's conversation language for all on-poster text (English prompt → English event-name/venue/description).
 ---
 
 # SurgePix Generate Poster
