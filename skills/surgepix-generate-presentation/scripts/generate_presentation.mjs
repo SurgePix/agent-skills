@@ -16,19 +16,16 @@
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
- *   SURGEPIX_BASE_URL       由 surgepix-setup(init) 写入本地 .env 后从环境变量读取
+ *   SURGEPIX_BASE_URL       必填，从 .env 或 shell 读取
  *   SURGEPIX_UPLOAD_FOLDER  可选，默认 files
  */
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
+import { fileURLToPath } from "node:url";
+import { loadConfig } from "./env.mjs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
-const uploadModule = await import(pathToFileURL(uploadScript).href);
-const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
+const { uploadFile, refreshConfig: refreshUploadConfig } = await import("./file_upload.mjs");
 
 // ============================================================
 // 常量
@@ -256,13 +253,16 @@ function validateN(n) {
 }
 
 async function main() {
+  const { prompt, outlines, n, aspectRatio, style, language, sessionId, nowait } = parseArgs();
+
   initConfig();
 
   if (!config.apiKey) {
-    fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
+    fail("SURGEPIX_API_KEY not found. Set it in .env or run surgepix-setup skill.");
   }
-
-  const { prompt, outlines, n, aspectRatio, style, language, sessionId, nowait } = parseArgs();
+  if (!config.baseUrl) {
+    fail("SURGEPIX_BASE_URL not found. Set it in .env or the shell (see surgepix-setup skill).");
+  }
 
   if (!prompt && outlines.length === 0) {
     fail("缺少参数: 请至少提供 --prompt 或 --outline");

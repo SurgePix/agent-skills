@@ -75,15 +75,19 @@ The SurgePix Agent Skills are available on:
 
 ### Setup
 
-**Requirement:** Set the `SURGEPIX_API_KEY` environment variable. Get your key at [surgepix.ai](https://surgepix.ai).
+**Requirement:** Set `SURGEPIX_API_KEY` and `SURGEPIX_BASE_URL`. Get your key at [surgepix.ai](https://surgepix.ai).
 
 ```bash
-# 1. Configure (copy example, fill in your key)
+# 1. Configure (clone workflow — .env.example is repo-root only)
 cp .env.example .env
-# edit .env → set SURGEPIX_API_KEY
+# edit .env → set SURGEPIX_API_KEY and SURGEPIX_BASE_URL
+# production example: SURGEPIX_BASE_URL=https://api.surgepix.ai/api
+
+# After `npx skills add`, create project-root .env manually with the same two keys
+# (the installer does not copy .env.example).
 
 # 2. Verify
-node surgepix-setup/scripts/check_env.mjs
+node skills/surgepix-setup/scripts/check_env.mjs
 ```
 
 Optional fallbacks (scripts auto-detect): `.claude/settings.local.json`, shell `export`.
@@ -132,7 +136,7 @@ User request (upload / remove-background)
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SURGEPIX_API_KEY` | Yes | — | Bearer token |
-| `SURGEPIX_BASE_URL` | No | `https://api.surgepix.ai/api` | API base URL |
+| `SURGEPIX_BASE_URL` | Yes | — | API base URL (e.g. `https://api.surgepix.ai/api`) |
 | `SURGEPIX_UPLOAD_FOLDER` | No | `files` | Upload folder |
 
 ## Why Use SurgePix for AI Agents?

@@ -12,7 +12,7 @@
  */
 
 import { fileURLToPath } from "node:url";
-import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
+import { loadConfig } from "./env.mjs";
 
 // ============================================================
 // Constants
@@ -132,12 +132,15 @@ function parseArgs() {
 }
 
 async function main() {
+  const { taskId } = parseArgs();
+
   const config = loadConfig();
   if (!config.apiKey) {
     fail("SURGEPIX_API_KEY not found. Create .env or run surgepix-setup skill.");
   }
-
-  const { taskId } = parseArgs();
+  if (!config.baseUrl) {
+    fail("SURGEPIX_BASE_URL not found. Set it in .env or the shell (see surgepix-setup skill).");
+  }
   if (!taskId) {
     fail("Missing taskId. Usage: node query_task.mjs <taskId>");
   }

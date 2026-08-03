@@ -7,16 +7,12 @@
  *
  * Output (stdout, JSON):
  *   {"ok":true,"configured":true,"sources":[".env"],"baseUrl":"..."}
- *   {"ok":true,"configured":false,"sources":[],"hint":"Create .env with SURGEPIX_API_KEY=..."}
+ *   {"ok":true,"configured":false,"sources":[],"missing":["SURGEPIX_API_KEY","SURGEPIX_BASE_URL"],"hint":"..."}
  *
  * Exit code: 0 if configured, 1 if not
  */
 
-import { ensureBaseUrl, getConfigStatus } from "./env.mjs";
-
-// Init: make sure SURGEPIX_BASE_URL is written to the user's local .env once,
-// so every other skill can read it from the environment afterwards.
-ensureBaseUrl();
+import { getConfigStatus } from "./env.mjs";
 
 const status = getConfigStatus();
 
@@ -37,7 +33,9 @@ console.log(
     ok: true,
     configured: false,
     sources: status.sources,
-    hint: "Create .env with SURGEPIX_API_KEY=your-token (see surgepix-setup skill)",
+    missing: status.missing,
+    hint:
+      "Create a project-root .env with SURGEPIX_API_KEY and SURGEPIX_BASE_URL (see surgepix-setup skill). Do not paste secrets into chat.",
   }),
 );
 process.exit(1);

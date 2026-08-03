@@ -15,25 +15,21 @@
  *
  * Env (auto-loaded):
  *   SURGEPIX_API_KEY        必填
- *   SURGEPIX_BASE_URL       可选，默认 https://api.surgepix.ai/api
+ *   SURGEPIX_BASE_URL       必填，从 .env 或 shell 读取
  *   SURGEPIX_UPLOAD_FOLDER  可选，默认 files
  */
 
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { loadConfig } from "../../surgepix-setup/scripts/env.mjs";
+import { fileURLToPath } from "node:url";
+import { loadConfig } from "./env.mjs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadScript = path.resolve(__dirname, "../../surgepix-upload/scripts/file_upload.mjs");
-const uploadModule = await import(pathToFileURL(uploadScript).href);
-const { uploadFile, refreshConfig: refreshUploadConfig } = uploadModule;
+const { uploadFile, refreshConfig: refreshUploadConfig } = await import("./file_upload.mjs");
 
 // ============================================================
 // 常量
 // ============================================================
 
-const DEFAULT_BASE_URL = "https://api.surgepix.ai/api";
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 600_000;
 const DEFAULT_USER_AGENT =
@@ -44,15 +40,10 @@ const DEFAULT_USER_AGENT =
 // 配置
 // ============================================================
 
-let config = { baseUrl: DEFAULT_BASE_URL, folder: "files", apiKey: "" };
+let config = { baseUrl: "", folder: "files", apiKey: "" };
 
 function initConfig() {
-  loadConfig();
-  config = {
-    baseUrl: process.env.SURGEPIX_BASE_URL ?? DEFAULT_BASE_URL,
-    folder: process.env.SURGEPIX_UPLOAD_FOLDER ?? "files",
-    apiKey: process.env.SURGEPIX_API_KEY ?? "",
-  };
+  config = loadConfig();
 }
 
 // ============================================================
@@ -242,13 +233,16 @@ function parseArgs() {
 }
 
 async function main() {
+  const { images, language, sessionId, nowait } = parseArgs();
+
   initConfig();
 
   if (!config.apiKey) {
-    fail("SURGEPIX_API_KEY not found. Set it in .env or .claude/settings.local.json");
+    fail("SURGEPIX_API_KEY not found. Set it in .env or run surgepix-setup skill.");
   }
-
-  const { images, language, sessionId, nowait } = parseArgs();
+  if (!config.baseUrl) {
+    fail("SURGEPIX_BASE_URL not found. Set it in .env or the shell (see surgepix-setup skill).");
+  }
   if (images.length === 0) {
     fail("缺少参数: 请至少提供一张图片路径或 URL");
   }
