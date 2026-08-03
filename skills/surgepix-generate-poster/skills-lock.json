@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "surgepix-generate-poster": {
+      "source": "SurgePix/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/surgepix-generate-poster/SKILL.md",
+      "computedHash": "a133f2d72f44cce7d3726720d060530b2e813628928399a5759b9e8923792cbd"
+    }
+  }
+}
