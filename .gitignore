@@ -31,4 +31,7 @@ node_modules/
 
 /scripts/
 
+# Local release notes (do not commit)
+RELEASE*
+
 skill.zip
