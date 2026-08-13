@@ -28,11 +28,9 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | `surgepix-remove-background` | "remove background", "抠图", "去背景" | Remove background → transparent PNG |
 | `surgepix-generate-poster` | "generate poster", "生成海报" | Generate event poster → PNG |
 | `surgepix-generate-presentation` | "generate ppt", "生成PPT" | Generate presentation → PPTX |
-| `surgepix-generate-logo` | "generate logo", "生成logo", "品牌logo" | Brand logo → PNG (transparent by default) |
 | `surgepix-generate-xhs` | "小红书套图", "小红书笔记图", "竖版轮播" (NOT generic「配图」) | Xiaohongshu **vertical** carousel → PNG/ZIP |
 | `surgepix-generate-illustrations` | "文章配图", "公众号配图", "博客插图" (NOT 小红书/竖版) | **16:9 horizontal** article illustrations → PNG/ZIP |
 | `surgepix-image-translate` | "translate image", "图片翻译", "翻译图片" | Translate on-image text → image or ZIP |
-| `surgepix-ppt-translate` | "translate ppt", "翻译PPT", "PPT翻译" | Translate PPT/PPTX → translated file URL |
 | `surgepix-query-task` | "check task", "poll task", "查任务" | Query/poll async task status |
 
 > **xhs vs illustrations:** If the user only says「配图」, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before picking a skill.
@@ -48,7 +46,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | 日本語 | Pass `--language jp` / `ja` | Write text params in Japanese |
 
 - **Do not default to Chinese on-image text** when the user prompts in English.
-- Applies to: `generate-illustrations`, `generate-xhs`, `generate-poster`, `generate-presentation`, `generate-logo` (prompt text), `image-translate`, `ppt-translate` (`--language` = target).
+- Applies to: `generate-illustrations`, `generate-xhs`, `generate-poster`, `generate-presentation`, `image-translate`.
 
 > Most task-producing skills expose a `--nowait` flag. With `--nowait false` (default) the script returns the final `download` URL in one call (image-translate waits on the API; others poll internally). With `--nowait true` the API returns a `taskId` immediately, which you resolve via the `surgepix-query-task` skill.
 
@@ -118,22 +116,6 @@ Check task status:
 
 ```bash
 node surgepix-query-task/scripts/query_task.mjs task_abc123
-```
-
-Generate a brand logo:
-
-```bash
-node skills/surgepix-generate-logo/scripts/generate_logo.mjs \
-  --brand-name "NovaByte" \
-  --prompt "Minimal geometric monogram"
-```
-
-Translate a PPTX deck:
-
-```bash
-node skills/surgepix-ppt-translate/scripts/ppt_translate.mjs \
-  ./deck.pptx \
-  --language Japanese
 ```
 
 ## Usage Flow
