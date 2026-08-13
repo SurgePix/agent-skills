@@ -73,7 +73,7 @@ node "<skills-dir>/surgepix-generate-poster/scripts/generate_poster.mjs" \
   --prompt "Dark background, neon blue and purple gradient, centered large title, futuristic tech style" \
   --size 1080x1920
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 #   ← Save sessionId for retries
 ```
 
@@ -107,7 +107,7 @@ node "<skills-dir>/surgepix-generate-poster/scripts/generate_poster.mjs" \
   --event-name "Summer Music Festival" \
   --date "2026-08-10 20:00" \
   --venue "Shenzhen · Seaside Plaza" \
-  --reference ./logo.png --reference ./mood.jpg --reference https://example.com/banner.png \
+  --reference ./logo.png --reference ./mood.jpg --reference <IMAGE_URL> \
   --size 1080x1920
 ```
 
@@ -172,19 +172,19 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://example.com/files/poster.png"}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 ```
 
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:
 
 ```json
-{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"..."}
+{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"<HINT>"}
 ```
 
 **Failure** (stderr):
 
 ```json
-{"ok":false,"error":"..."}
+{"ok":false,"error":"<ERROR>"}
 ```
 
 ### Step 4: Present result

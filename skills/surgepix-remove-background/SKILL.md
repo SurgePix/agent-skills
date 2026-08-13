@@ -49,7 +49,7 @@ node "<skills-dir>/surgepix-remove-background/scripts/remove_background.mjs" \
   ./photo.jpg
 # Script uploads the image automatically — no separate step needed.
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 #   ← Save sessionId for retries
 ```
 
@@ -65,7 +65,7 @@ node "<skills-dir>/surgepix-remove-background/scripts/remove_background.mjs" \
 node "<skills-dir>/surgepix-remove-background/scripts/remove_background.mjs" \
   ./photo.jpg --nowait true
 # Returns JSON immediately:
-#   {"ok":true,"async":true,"taskId":"task_abc123","sessionId":123,"progress":"processing","download":null,"hint":"..."}
+#   {"ok":true,"async":true,"taskId":"task_abc123","sessionId":123,"progress":"processing","download":null,"hint":"<HINT>"}
 
 # Then use the surgepix-query-task skill to poll the taskId until progress becomes succeeded
 ```
@@ -127,19 +127,19 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result.png"}
+{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 ```
 
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:
 
 ```json
-{"ok":true,"async":true,"taskId":"task_abc123","sessionId":123,"progress":"processing","download":null,"hint":"..."}
+{"ok":true,"async":true,"taskId":"task_abc123","sessionId":123,"progress":"processing","download":null,"hint":"<HINT>"}
 ```
 
 **Failure** (stderr):
 
 ```json
-{"ok":false,"error":"..."}
+{"ok":false,"error":"<ERROR>"}
 ```
 
 ### Step 5: Handle the result

@@ -64,7 +64,7 @@ node "<skills-dir>/surgepix-query-task/scripts/query_task.mjs" "<taskId>"
 **Success** (stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result.png","taskResult":{"download":"https://example.com/files/result"}}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>","taskResult":{"download":"<DOWNLOAD_URL>"}}
 ```
 
 **Still processing**:

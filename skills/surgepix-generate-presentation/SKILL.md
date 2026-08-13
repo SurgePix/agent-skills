@@ -72,7 +72,7 @@ node "<skills-dir>/surgepix-generate-presentation/scripts/generate_presentation.
   --style corporate \
   --language zh
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 #   ← Save sessionId for retries
 ```
 
@@ -159,19 +159,19 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://example.com/files/presentation.pptx"}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 ```
 
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:
 
 ```json
-{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"..."}
+{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"<HINT>"}
 ```
 
 **Failure** (stderr):
 
 ```json
-{"ok":false,"error":"..."}
+{"ok":false,"error":"<ERROR>"}
 ```
 
 ### Step 4: Present result

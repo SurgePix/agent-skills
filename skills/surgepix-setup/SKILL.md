@@ -30,7 +30,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Configured** (exit 0):
 
 ```json
-{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"https://api.example.com"}
+{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"<SURGEPIX_BASE_URL>"}
 ```
 
 → Tell user env is ready, proceed with the original task.
@@ -38,7 +38,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Not configured** (exit 1):
 
 ```json
-{"ok":true,"configured":false,"missing":["SURGEPIX_API_KEY","SURGEPIX_BASE_URL"],"hint":"..."}
+{"ok":true,"configured":false,"missing":["SURGEPIX_API_KEY","SURGEPIX_BASE_URL"],"hint":"<HINT>"}
 ```
 
 → Continue to Step 2.

@@ -72,6 +72,22 @@ The SurgePix Agent Skills are available on:
 - **Gemini CLI** — `cp -r surgepix-* ~/.gemini/skills/`
 - **OpenClaw** — `cp -r surgepix-* ~/.openclaw/skills/`
 
+### skills.sh 安全扫描说明
+
+安装 CLI 可能展示 Gen / Socket / Snyk 三列摘要，详情见 [skills.sh/SurgePix/agent-skills](https://skills.sh/SurgePix/agent-skills)：
+
+| 列 | 含义 |
+|----|------|
+| **Gen** | 生成式扫描总评（本仓库一般为 Safe） |
+| **Socket** | 行为/供应链启发式；对 `file_upload.mjs` 的「可上传本地文件到可配置 base URL」常标为 Anomaly |
+| **Snyk** | Skill 指令与数据流风险；曾误报文档占位下载 URL 为 **E005 Critical** |
+
+文档示例已改用无 scheme 占位符（如 `<DOWNLOAD_URL>`），避免 E005 误报。以下告警属**预期能力模型**，不是漏洞，本仓库不会为消分而删除：
+
+- **Snyk W011**：生成/处理类 skill 会把用户 prompt 或图片 URL 交给 SurgePix API
+- **Socket 上传告警**：上传与本地参考图是产品必要能力
+
+第三方审计可能滞后于 Git 提交；推送后请重新 `npx skills add` 并打开上述详情页核对。
 
 ### Setup
 

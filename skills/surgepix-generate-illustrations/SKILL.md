@@ -86,7 +86,7 @@ node "<skills-dir>/surgepix-generate-illustrations/scripts/generate_illustration
   --topic "内容生产闭环：从选题、写作到分发与复盘" \
   --count 4
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/illustrations.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
 #   ← Save sessionId for retries
 ```
 
@@ -174,7 +174,8 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://example.com/files/illustrations.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
+# `<DOWNLOAD_URL>` 仅为文档占位；真实 HTTPS 下载地址以脚本 stdout 为准。
 ```
 
 > **CRITICAL — 禁止编造单张图片链接**
@@ -186,13 +187,13 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:
 
 ```json
-{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"..."}
+{"ok":true,"async":true,"taskId":"task_xxx","sessionId":123,"progress":"processing","download":null,"hint":"<HINT>"}
 ```
 
 **Failure** (stderr):
 
 ```json
-{"ok":false,"error":"..."}
+{"ok":false,"error":"<ERROR>"}
 ```
 
 ### Step 4: Present result
@@ -200,7 +201,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 > **CRITICAL — 禁止编造单张图片链接（幻觉高发区）**
 > - 脚本输出 `resultType: "zip"` 或 `imageCount > 1` 时，API **只返回一个 ZIP 的 `download` 链接**，没有单张图片 URL。
 > - **只向用户展示 `download` 这一个 ZIP 链接**，说明「共 N 张图，请下载 ZIP 解压查看」。
-> - **绝对禁止**编造类似「第 1 张：https://example.com/files/img1.png」「第 2 张：https://example.com/files/img2.png」的链接——这些 URL 不存在。
+> - **绝对禁止**编造「第 1 张」「第 2 张」等单张图片下载链接——API 不会返回这些 URL。
 > - 若用户需要单张直链，只能重新以 `--count 1` 或 `--shots` 只含 1 条重新生成。
 
 - **On success:** Show **only** the `download` URL from script output. **Always show `sessionId`** (note: it is a number type, e.g. `123`) so the user can pass it in a retry if needed.
