@@ -52,7 +52,7 @@ node "<skills-dir>/surgepix-upload/scripts/file_upload.mjs" "<absolute-file-path
 **Success** (stdout):
 
 ```json
-{"ok":true,"url":"https://...","filename":"photo.png","size":12345,"contentType":"image/png","existing":false}
+{"ok":true,"url":"https://example.com/files/result","filename":"photo.png","size":12345,"contentType":"image/png","existing":false}
 ```
 
 **Failure** (stderr, non-zero exit):

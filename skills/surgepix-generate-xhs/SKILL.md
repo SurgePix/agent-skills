@@ -106,7 +106,7 @@ node "<skills-dir>/surgepix-generate-xhs/scripts/generate_xhs.mjs" \
   --language zh
 # API body: {"prompt":["春季护肤 5 个误区，很多人第一条就踩坑"], "count":1, ...}
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://..."}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
 #   ← Save sessionId for retries
 ```
 
@@ -218,7 +218,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://...images.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
+{"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result.zip","imageCount":4,"resultType":"zip","note":"API 仅返回 ZIP 下载地址，不含单张图片 URL；禁止编造单张链接"}
 ```
 
 > **CRITICAL — 禁止编造单张图片链接**
@@ -244,7 +244,7 @@ The request is always submitted asynchronously. `--nowait false` (default) makes
 > **CRITICAL — 禁止编造单张图片链接（幻觉高发区）**
 > - 脚本输出 `resultType: "zip"` 或 `imageCount > 1` 时，API **只返回一个 ZIP 的 `download` 链接**，没有单张图片 URL。
 > - **只向用户展示 `download` 这一个 ZIP 链接**，说明「共 N 张图，请下载 ZIP 解压查看」。
-> - **绝对禁止**编造「封面图：https://...」「第 2 张：https://...」等单张链接——这些 URL 不存在。
+> - **绝对禁止**编造「封面图：https://example.com/files/cover.png」「第 2 张：https://example.com/files/page-2.png」等单张链接——这些 URL 不存在。
 > - 若用户需要单张直链，只能以 `--count 1` 重新生成。
 
 - **On success:** Show **only** the `download` URL from script output. **Always show `sessionId`** (note: it is a number type, e.g. `123`) so the user can pass it in a retry if needed.

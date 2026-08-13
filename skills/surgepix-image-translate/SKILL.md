@@ -56,7 +56,7 @@ This skill uses the script at `<skills-dir>/surgepix-image-translate/scripts/ima
 node "<skills-dir>/surgepix-image-translate/scripts/image_translate.mjs" \
   ./poster.png
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://...","imageCount":1,"resultType":"image"}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result","imageCount":1,"resultType":"image"}
 #   ← Save sessionId for retries
 ```
 
@@ -147,7 +147,7 @@ node "<skills-dir>/surgepix-image-translate/scripts/image_translate.mjs" \
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://...","imageCount":1,"resultType":"image"}
+{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result","imageCount":1,"resultType":"image"}
 ```
 
 **Async submitted** (`--nowait true`, stdout):

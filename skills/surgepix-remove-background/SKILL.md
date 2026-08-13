@@ -49,7 +49,7 @@ node "<skills-dir>/surgepix-remove-background/scripts/remove_background.mjs" \
   ./photo.jpg
 # Script uploads the image automatically — no separate step needed.
 # Output (JSON):
-#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://..."}
+#   {"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
 #   ← Save sessionId for retries
 ```
 
@@ -127,7 +127,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Sync success** (`--nowait false`, stdout):
 
 ```json
-{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://...result.png"}
+{"ok":true,"taskId":"task_abc123","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result.png"}
 ```
 
 **Async submitted** (`--nowait true`, stdout) — resolve later with the **surgepix-query-task** skill:

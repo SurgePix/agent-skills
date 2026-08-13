@@ -30,7 +30,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 **Configured** (exit 0):
 
 ```json
-{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"https://..."}
+{"ok":true,"configured":true,"sources":["/path/to/.env"],"baseUrl":"https://api.example.com"}
 ```
 
 → Tell user env is ready, proceed with the original task.

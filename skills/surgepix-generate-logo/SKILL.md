@@ -68,7 +68,7 @@ Script path: `<skills-dir>/surgepix-generate-logo/scripts/generate_logo.mjs`.
 node "<skills-dir>/surgepix-generate-logo/scripts/generate_logo.mjs" \
   --brand-name "NovaByte" \
   --prompt "Minimal geometric monogram, primary #2563EB"
-# {"ok":true,"taskId":"...","sessionId":123,"progress":"succeeded","download":"https://..."}
+# {"ok":true,"taskId":"...","sessionId":123,"progress":"succeeded","download":"https://example.com/files/result"}
 ```
 
 **With local reference and opaque background:**
