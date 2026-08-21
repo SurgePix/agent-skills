@@ -29,6 +29,8 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | `surgepix-generate-poster` | "generate poster", "生成海报" | Generate event poster → PNG |
 | `surgepix-generate-presentation` | "generate ppt", "生成PPT" | Generate presentation → PPTX |
 | `surgepix-generate-logo` | "generate logo", "生成logo", "品牌logo" | Brand logo → PNG (transparent by default) |
+| `surgepix-generate-storyboard` | "分镜头", "故事板", "storyboard", "分镜剧本" | Multi-shot storyboard → single PNG |
+| `surgepix-image-edit` | "图片编辑", "改图", "image edit", "重绘" | Edit image from references + prompt → PNG |
 | `surgepix-generate-xhs` | "小红书套图", "小红书笔记图", "竖版轮播" (NOT generic「配图」) | Xiaohongshu **vertical** carousel → PNG/ZIP |
 | `surgepix-generate-illustrations` | "文章配图", "公众号配图", "博客插图" (NOT 小红书/竖版) | **16:9 horizontal** article illustrations → PNG/ZIP |
 | `surgepix-image-translate` | "translate image", "图片翻译", "翻译图片" | Translate on-image text → image or ZIP |
@@ -48,7 +50,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | 日本語 | Pass `--language jp` / `ja` | Write text params in Japanese |
 
 - **Do not default to Chinese on-image text** when the user prompts in English.
-- Applies to: `generate-illustrations`, `generate-xhs`, `generate-poster`, `generate-presentation`, `generate-logo` (prompt text), `image-translate`, `ppt-translate` (`--language` = target).
+- Applies to: `generate-illustrations`, `generate-xhs`, `generate-poster`, `generate-presentation`, `generate-logo` / `generate-storyboard` / `image-edit` (prompt/script text), `image-translate`, `ppt-translate` (`--language` = target).
 
 > Most task-producing skills expose a `--nowait` flag. With `--nowait false` (default) the script returns the final `download` URL in one call (image-translate waits on the API; others poll internally). With `--nowait true` the API returns a `taskId` immediately, which you resolve via the `surgepix-query-task` skill.
 
@@ -126,6 +128,23 @@ Generate a brand logo:
 node skills/surgepix-generate-logo/scripts/generate_logo.mjs \
   --brand-name "NovaByte" \
   --prompt "Minimal geometric monogram"
+```
+
+Generate a storyboard from a shot script:
+
+```bash
+node skills/surgepix-generate-storyboard/scripts/generate_storyboard.mjs \
+  --script "Shot 1: wide beach; Shot 2: close-up smile" \
+  --count 2
+```
+
+Edit an image from a reference and instruction:
+
+```bash
+node skills/surgepix-image-edit/scripts/image_edit.mjs \
+  --reference ./photo.png \
+  --prompt "Replace the sky with a sunset" \
+  --size 1024x1024
 ```
 
 Translate a PPTX deck:
