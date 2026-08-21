@@ -22,7 +22,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig } from "./env.mjs";
+import { discoverAndLoadEnv, loadConfig } from "./env.mjs";
 
 const { uploadFile, refreshConfig: refreshUploadConfig } = await import("./file_upload.mjs");
 
@@ -216,10 +216,16 @@ async function main() {
   initConfig();
 
   if (!config.apiKey) {
-    fail("SURGEPIX_API_KEY not found. Set it in .env or run surgepix-setup skill.");
+    const sources = discoverAndLoadEnv();
+    fail(
+      `SURGEPIX_API_KEY not found. Set it in .env or run surgepix-setup skill. sources=${JSON.stringify(sources)}`,
+    );
   }
   if (!config.baseUrl) {
-    fail("SURGEPIX_BASE_URL not found. Set it in .env or the shell (see surgepix-setup skill).");
+    const sources = discoverAndLoadEnv();
+    fail(
+      `SURGEPIX_BASE_URL not found. Set it in .env or the shell (see surgepix-setup skill). sources=${JSON.stringify(sources)}`,
+    );
   }
 
   if (!script) {

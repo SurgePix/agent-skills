@@ -7,18 +7,28 @@
  *
  * SURGEPIX_BASE_URL must be set by the user/agent in .env or the shell.
  * This module does not hardcode or auto-write a default API host.
+ *
+ * 发现顺序：process.cwd() 上溯 ∪ 本文件（scripts/）目录上溯；
+ * 非空的 process.env 优先；空字符串视为未设置，可被 .env 填补。
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export const DEFAULT_FOLDER = "files";
+
+/** process.env 中空串视为未设置，允许 .env 写入 */
+function isEnvUnset(key) {
+  const cur = process.env[key];
+  return cur === undefined || cur === "";
+}
 
 /** @param {Record<string, string>} vars */
 function applyEnvVars(vars) {
   for (const [key, value] of Object.entries(vars)) {
-    if (value != null && value !== "" && process.env[key] === undefined) {
+    if (value != null && value !== "" && isEnvUnset(key)) {
       process.env[key] = String(value);
     }
   }
@@ -72,32 +82,53 @@ function loadJsonEnvFile(filePath) {
 }
 
 /**
- * Discover and load env from multiple sources (shell env takes priority).
- * @returns {string[]} list of sources that were found
+ * 从 startDir 向上查找 .env 与 .claude/settings.local.json
+ * @param {string} startDir
+ * @param {string[]} sources
+ * @param {Set<string>} visitedDirs 已 walk 过的目录（跨起点去重）
+ * @param {Set<string>} seenFiles 已记录的来源路径
  */
-export function discoverAndLoadEnv() {
-  /** @type {string[]} */
-  const sources = [];
-
-  let dir = process.cwd();
-  const visited = new Set();
-
-  while (dir && !visited.has(dir)) {
-    visited.add(dir);
-    if (loadDotEnvFile(path.join(dir, ".env"))) {
-      sources.push(path.join(dir, ".env"));
+function walkLoadFrom(startDir, sources, visitedDirs, seenFiles) {
+  let dir = startDir;
+  while (dir && !visitedDirs.has(dir)) {
+    visitedDirs.add(dir);
+    const envPath = path.join(dir, ".env");
+    if (loadDotEnvFile(envPath) && !seenFiles.has(envPath)) {
+      sources.push(envPath);
+      seenFiles.add(envPath);
     }
-    if (loadJsonEnvFile(path.join(dir, ".claude", "settings.local.json"))) {
-      sources.push(path.join(dir, ".claude/settings.local.json"));
+    const settingsPath = path.join(dir, ".claude", "settings.local.json");
+    if (loadJsonEnvFile(settingsPath) && !seenFiles.has(settingsPath)) {
+      sources.push(settingsPath);
+      seenFiles.add(settingsPath);
     }
     const parent = path.dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
+}
+
+/**
+ * Discover and load env from multiple sources (non-empty shell env takes priority).
+ * @returns {string[]} list of sources that were found
+ */
+export function discoverAndLoadEnv() {
+  /** @type {string[]} */
+  const sources = [];
+  const visitedDirs = new Set();
+  const seenFiles = new Set();
+
+  // 1) 从 cwd 向上
+  walkLoadFrom(process.cwd(), sources, visitedDirs, seenFiles);
+
+  // 2) 从本 env.mjs 所在 scripts 目录向上（绝对路径调用时仍能找到项目 .env）
+  const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+  walkLoadFrom(scriptDir, sources, visitedDirs, seenFiles);
 
   const homeClaude = path.join(homedir(), ".claude", "settings.local.json");
-  if (loadJsonEnvFile(homeClaude)) {
+  if (loadJsonEnvFile(homeClaude) && !seenFiles.has(homeClaude)) {
     sources.push(homeClaude);
+    seenFiles.add(homeClaude);
   }
 
   if (process.env.SURGEPIX_API_KEY || process.env.SURGEPIX_BASE_URL) {
