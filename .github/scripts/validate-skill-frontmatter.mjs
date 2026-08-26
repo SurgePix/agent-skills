@@ -15,7 +15,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const EXPECTED_SKILL_COUNT = 13;
+const EXPECTED_SKILL_COUNT = 15;
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SKILLS_DIR = join(ROOT, "skills");
 
