@@ -1,7 +1,7 @@
 ---
 name: surgepix-image-edit
 description: >-
-  Edit images from reference image(s) and a natural-language prompt via SurgePix. Use when the user says "图片编辑", "改图", "重绘", "image edit", "edit this image", "把图里的…改成…", or wants general image editing from references. Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only.
+  Edit images from reference image(s) and a natural-language prompt via SurgePix. Do NOT use when the user wants 超现实主义风格 / 超现实主义 / surrealism / 改成超现实 (use surgepix-generate-restaged-cinematic) or 极简诗意风格 / 诗意风格 / 改成极简诗意 (use surgepix-generate-photo-poetic-editorial). Use when the user says "图片编辑", "改图", "重绘", "image edit", "edit this image", "把图里的…改成…", or wants general image editing from references — but "改成" plus 超现实/诗意 is a locked-style restyle, not this skill. Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only.
 ---
 
 # SurgePix Image Edit
@@ -20,10 +20,19 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 - Reply to the user in the same language they used in their request.
 
+## Skill router (read first)
+
+| Use this skill | Use something else |
+|----------------|-------------------|
+| General 改图 / 重绘 / 局部调整 **without** a locked style | **surgepix-generate-restaged-cinematic** for 超现实主义风格 / surrealism / 改成超现实 |
+| "把图里的天空改成黄昏" and similar object-level edits | **surgepix-generate-photo-poetic-editorial** for 极简诗意风格 / 改成极简诗意 |
+
+**Do NOT use this skill** when the user says「帮我把这张图改成超现实主义风格」or「改成极简诗意风格」— those are locked-style restyles.
+
 ## When to use
 
 - User says "图片编辑", "改图", "重绘", "局部调整", "image edit", "edit this image"
-- User provides one or more reference images and an edit instruction
+- User provides one or more reference images and an edit instruction **that is not** 超现实 / 极简诗意 locked style
 
 ## Prerequisites
 

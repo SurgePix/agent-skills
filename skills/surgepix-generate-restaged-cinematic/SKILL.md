@@ -1,7 +1,7 @@
 ---
 name: surgepix-generate-restaged-cinematic
 description: >-
-  Restyle 1–5 reference photos into controlled surreal cinematic stage illustrations via SurgePix (server-locked style). Use when the user wants 超现实重构电影化插图, 受控超现实舞台, 前卫电影感, 抽象几何色场, 大型色块构成, or "restaged cinematic". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), poetic editorial (surgepix-generate-photo-poetic-editorial), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without style, ask first.
+  Restyle 1–5 reference photos into controlled surreal cinematic stage illustrations via SurgePix (server-locked style). Prefer this over surgepix-image-edit when the user says 超现实主义风格, 超现实主义, surrealism, 改成超现实, 帮我把这张图改成超现实主义风格, 超现实重构电影化插图, 受控超现实舞台, 前卫电影感, 抽象几何色场, 大型色块构成, or "restaged cinematic". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), poetic editorial (surgepix-generate-photo-poetic-editorial), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without naming 超现实/诗意, ask first. 「超现实主义风格」is an explicit style — call this skill, do not ask and do not use image-edit.
 ---
 
 # SurgePix Generate Restaged Cinematic
@@ -24,17 +24,19 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 | Use this skill | Use something else |
 |----------------|-------------------|
-| 超现实重构 / 电影化舞台 / 前卫电影感 / 抽象几何 / 大型色场 | **surgepix-generate-photo-poetic-editorial** for 极简诗意 / 视觉记忆面板 |
-| Reference photos must be restaged into locked cinematic look | **surgepix-image-edit** for general 改图/重绘 without a locked style |
+| 超现实主义风格 / 超现实主义 / surrealism / 改成超现实 / 超现实重构 / 电影化舞台 / 前卫电影感 / 抽象几何 / 大型色场 | **surgepix-generate-photo-poetic-editorial** for 极简诗意 / 视觉记忆面板 |
+| Reference photos restyled into locked cinematic / surreal look | **surgepix-image-edit** for general 改图/重绘 **without** 超现实 or 极简诗意 |
 | Photo → illustration | **surgepix-generate-illustrations** for 公众号/博客 topic 配图 (no required photo) |
 
-**Ambiguous input:** If the user only says「把这张照片做成插画」without style, ask:
+**Explicit style — do not ask:** 「帮我把这张图改成超现实主义风格」→ use **this skill immediately** (not image-edit).
+
+**Ambiguous input:** If the user only says「把这张照片做成插画」**without** 超现实 / 诗意 / 电影化, ask:
 > 是要 **极简诗意编辑**、**超现实电影化重构**，还是 **通用改图**？
 
 ## When to use
 
-- User says "超现实重构电影化插图", "受控超现实舞台", "前卫电影感", "抽象几何", "大型色场", "restaged cinematic"
-- User provides 1–5 photos and wants them restaged as a cinematic / color-field composition
+- User says "超现实主义风格", "超现实主义", "surrealism", "改成超现实", "帮我把这张图改成超现实主义风格", "超现实重构电影化插图", "受控超现实舞台", "前卫电影感", "抽象几何", "大型色场", "restaged cinematic"
+- User provides 1–5 photos and wants them restaged as a cinematic / surreal / color-field composition
 
 ## Prerequisites
 

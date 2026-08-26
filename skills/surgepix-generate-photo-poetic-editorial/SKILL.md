@@ -1,7 +1,7 @@
 ---
 name: surgepix-generate-photo-poetic-editorial
 description: >-
-  Restyle 1–5 reference photos into minimalist poetic editorial illustrations via SurgePix (server-locked style). Use when the user wants 极简诗意编辑插画, 极简抽象插画, 视觉记忆面板, 极简档案海报, 摄影诗意编辑, or "poetic editorial". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), cinematic restaging (surgepix-generate-restaged-cinematic), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without style, ask first.
+  Restyle 1–5 reference photos into minimalist poetic editorial illustrations via SurgePix (server-locked style). Prefer this over surgepix-image-edit when the user says 极简诗意风格, 诗意风格, 改成极简诗意, 帮我把这张图改成极简诗意风格, 极简诗意编辑插画, 极简抽象插画, 视觉记忆面板, 极简档案海报, 摄影诗意编辑, or "poetic editorial". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), cinematic restaging (surgepix-generate-restaged-cinematic), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without naming 诗意/超现实, ask first. 「极简诗意风格」is an explicit style — call this skill, do not ask and do not use image-edit.
 ---
 
 # SurgePix Generate Photo Poetic Editorial
@@ -24,16 +24,18 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 | Use this skill | Use something else |
 |----------------|-------------------|
-| 极简诗意 / 极简抽象 / 视觉记忆面板 / 摄影诗意编辑 | **surgepix-generate-restaged-cinematic** for 超现实 / 电影化舞台 / 色场 |
-| Reference photos must be restyled into locked poetic editorial | **surgepix-image-edit** for general 改图/重绘 without a locked style |
+| 极简诗意风格 / 诗意风格 / 改成极简诗意 / 极简诗意 / 极简抽象 / 视觉记忆面板 / 摄影诗意编辑 | **surgepix-generate-restaged-cinematic** for 超现实主义风格 / 电影化舞台 / 色场 |
+| Reference photos restyled into locked poetic editorial | **surgepix-image-edit** for general 改图/重绘 **without** 诗意 or 超现实 |
 | Photo → illustration | **surgepix-generate-illustrations** for 公众号/博客 topic 配图 (no required photo) |
 
-**Ambiguous input:** If the user only says「把这张照片做成插画」without style, ask:
+**Explicit style — do not ask:** 「帮我把这张图改成极简诗意风格」→ use **this skill immediately** (not image-edit).
+
+**Ambiguous input:** If the user only says「把这张照片做成插画」**without** 诗意 / 超现实 / 电影化, ask:
 > 是要 **极简诗意编辑**、**超现实电影化重构**，还是 **通用改图**？
 
 ## When to use
 
-- User says "极简诗意编辑插画", "极简抽象", "视觉记忆面板", "极简档案海报", "摄影诗意编辑", "poetic editorial"
+- User says "极简诗意风格", "诗意风格", "改成极简诗意", "帮我把这张图改成极简诗意风格", "极简诗意编辑插画", "极简抽象", "视觉记忆面板", "极简档案海报", "摄影诗意编辑", "poetic editorial"
 - User provides 1–5 photos and wants them restyled into a quiet, minimal editorial illustration
 
 ## Prerequisites
