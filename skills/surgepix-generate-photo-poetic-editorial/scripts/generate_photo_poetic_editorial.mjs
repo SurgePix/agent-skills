@@ -93,21 +93,19 @@ async function resolveReference(ref) {
   return result.url;
 }
 
-const LINE_PREFIX_ZH = [
-  "【线条方向】把参考照片收成极简线条编辑海报：大面积米色留白、居中小图形、一根干净的线，不要做成浮世绘/丝网印刷剪影画。",
-  "物体压成几何色块：气球=无图案的纯色圆/椭圆叠在一起；楼=浅色无窗矩形；人=沿一根细横线排列的小圆点/小色块，不要完整人体剪影，不要举相机姿势。",
-  "线条感来自少而清晰的线：桥/栏杆只画一条细或中等粗细的水平线，可加极少短刻；禁止密排竖栏，禁止纸纹颗粒，禁止蓝天铺满画面。",
-  "右上可放一排 3–4 个小色卡，左下可放两行很小的衬线标题。严格平涂，无渐变无颗粒。",
-  "禁止：risograph/ukiyo-e/套色叠印、深蓝全身剪影、带窗格的楼、条纹笑脸气球、奶油卡纸包着一幅风景画。",
+const PANEL_PREFIX_ZH = [
+  "【面板方向】只输出一张象牙色抽象记忆面板，不要把原片放进画面，不要上图下板的拼接，不要整张照片重绘成插画或套色印刷。",
+  "参考图只用来提炼空间关系（方向、间隔、重叠、节奏、色彩角色），成品里不得出现这张照片或其裁切。",
+  "不是缩略图、描摹或全身剪影。人群用短竖色块，头肩连成一体；栏杆压成一至两条细水平线；气球/树冠用重叠柔和色块，无内部图案。",
+  "背景均匀象牙色，母题偏小、留白充分。只放一个 2–5 词英文主标题（必要时一句短副标题），克制衬线体。不要色卡、图例、日期、logo、纸纹颗粒、浮世绘剪影。",
   "【场景补充】",
 ].join("");
 
-const LINE_PREFIX_EN = [
-  "[Line direction] Restyle the reference as a minimal line editorial poster: large beige negative space, a small centered graphic, one clean line — not a ukiyo-e / risograph silhouette print. ",
-  "Reduce objects to geometric flats: balloons = unpatterned solid circles/ovals; building = faint windowless rectangles; people = tiny dots or blobs along one thin horizontal line, never full-body silhouettes or a photographer pose. ",
-  "Line work means few crisp strokes: the bridge/rail is a single thin-to-medium horizontal (sparse notches OK). No dense vertical bars, no paper grain, no sky filling the frame. ",
-  "A row of 3–4 color chips may sit in a corner; two lines of tiny serif type may sit bottom-left. Strictly flat, no gradients, no grit. ",
-  "Forbidden: risograph/ukiyo-e, navy full silhouettes, window grids, striped or character balloons, a cream-matted landscape print. ",
+const PANEL_PREFIX_EN = [
+  "[Panel direction] Output only an ivory abstract memory panel. Do not include the source photo anywhere. No photo-plus-panel diptych. Do not restyle the whole photo into an illustration or risograph print. ",
+  "The reference is for distilling spatial facts only (direction, interval, overlap, rhythm, color roles). The finished image must not show the photograph or a crop of it. ",
+  "Not a thumbnail, tracing, or full-body silhouette. People = short vertical marks with head and body fused; a rail = one or two thin horizontals; balloons/canopies = overlapping soft flats with no internal patterns. ",
+  "Flat ivory ground, small motif, generous whitespace. One original English title of 2–5 words (optional short subtitle) in a restrained serif. No color chips, legends, dates, logos, paper grain, or ukiyo-e silhouettes. ",
   "[Scene notes] ",
 ].join("");
 
@@ -118,15 +116,26 @@ function isMostlyChinese(text) {
   return cjk / chars.length >= 0.2;
 }
 
-/** 为用户 prompt 垫一层极简线条海报方向，避免收成套色印刷剪影画。已带标记则不重复拼接。 */
-function composeLinePrompt(userPrompt) {
-  const trimmed = String(userPrompt ?? "").trim();
-  if (!trimmed) return trimmed;
-  if (trimmed.includes("【线条方向】") || trimmed.includes("[Line direction]")) {
+function stripLegacyFloors(text) {
+  return String(text)
+    .replace(/^【(?:线条|面板|重构)方向】[\s\S]*?【场景补充】/, "")
+    .replace(/^\[(?:Line|Panel|Restage) direction\][\s\S]*?\[Scene notes\]\s*/i, "")
+    .trim();
+}
+
+/** 垫一层「只出抽象面板、不要原片」方向。已带新标记则不重复；旧底板会先剥掉再拼。 */
+function composeEditorialPrompt(userPrompt) {
+  const trimmed = stripLegacyFloors(userPrompt);
+  if (!trimmed) return "";
+  if (trimmed.includes("【面板方向】") || trimmed.includes("[Panel direction]")) {
     return trimmed;
   }
-  const prefix = isMostlyChinese(trimmed) ? LINE_PREFIX_ZH : LINE_PREFIX_EN;
+  const prefix = isMostlyChinese(trimmed) ? PANEL_PREFIX_ZH : PANEL_PREFIX_EN;
   return `${prefix}${trimmed}`;
+}
+
+function composeLinePrompt(userPrompt) {
+  return composeEditorialPrompt(userPrompt);
 }
 
 /** @param {string} raw @returns {[number, number]} */
@@ -212,7 +221,7 @@ function printHelp() {
   console.error("         --reference <path-or-url> [--reference ...] \\");
   console.error("         [--session-id <id>] [--nowait <true|false>]");
   console.error("");
-  console.error("  --prompt <text>           场景说明（必填；脚本会垫一层极简线条海报方向，不能覆盖服务端固定风格）");
+  console.error("  --prompt <text>           场景说明（必填；脚本会垫一层「只要抽象面板、不要原片」方向）");
   console.error("  --size <WxH>              目标宽高，例如 1024x1024（必填）");
   console.error("  --reference <path-or-url> 参考图（必填 1–5 张，可重复；本地路径自动上传）");
   console.error("  --session-id <id>         会话 ID，迭代调整时传入");
@@ -299,7 +308,7 @@ async function main() {
 
     const data = await generatePhotoPoeticEditorial({
       reference: resolvedRefs,
-      prompt: composeLinePrompt(trimmedPrompt),
+      prompt: composeEditorialPrompt(trimmedPrompt),
       size: sizePair,
       sessionId,
     });
@@ -329,4 +338,4 @@ if (isMain) {
   main();
 }
 
-export { generatePhotoPoeticEditorial, pollUntilDone, resolveReference, parseSize, composeLinePrompt };
+export { generatePhotoPoeticEditorial, pollUntilDone, resolveReference, parseSize, composeEditorialPrompt, composeLinePrompt };

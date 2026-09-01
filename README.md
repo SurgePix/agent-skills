@@ -31,7 +31,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 | `surgepix-generate-logo` | "generate logo", "生成logo", "品牌logo" | Brand logo → PNG (transparent by default) |
 | `surgepix-generate-storyboard` | "分镜头", "故事板", "storyboard", "分镜剧本" | Multi-shot storyboard → single PNG |
 | `surgepix-image-edit` | "图片编辑", "改图", "重绘" (NOT 超现实主义风格 / 极简诗意风格) | General edit from references + prompt → PNG |
-| `surgepix-generate-photo-poetic-editorial` | "极简诗意风格", "极简线条", "改成极简诗意", "极简诗意编辑插画", "poetic editorial" | Photo → locked **geometric line poster** (not risograph silhouette print) PNG |
+| `surgepix-generate-photo-poetic-editorial` | "极简诗意风格", "极简线条", "视觉记忆面板", "改成极简诗意", "poetic editorial" | Photo reference → **ivory abstract panel only** (no source photo in the output) PNG |
 | `surgepix-generate-restaged-cinematic` | "超现实主义风格", "改成超现实", "surrealism", "超现实重构电影化插图" | Photo → locked **conceptual cinematic restage** (not flattened photo) PNG |
 | `surgepix-generate-xhs` | "小红书套图", "小红书笔记图", "竖版轮播" (NOT generic「配图」) | Xiaohongshu **vertical** carousel → PNG/ZIP |
 | `surgepix-generate-illustrations` | "文章配图", "公众号配图", "博客插图" (NOT 小红书/竖版) | **16:9 horizontal** article illustrations → PNG/ZIP |
@@ -41,7 +41,7 @@ The SurgePix Agent Skills give AI agents (Claude, Codex, Cursor, Gemini, OpenCla
 
 > **xhs vs illustrations:** If the user only says「配图」, ask whether they need 小红书竖版套图 or 公众号/博客横版插图 before picking a skill.
 >
-> **Photo → illustration:** 「帮我把这张图改成超现实主义风格」→ `surgepix-generate-restaged-cinematic` (conceptual restage: metaphor + color-field set + surreal device — **not** flatten the backdrop). 「改成极简诗意风格」/「极简线条」→ `surgepix-generate-photo-poetic-editorial` (geometric line poster on beige negative space — **not** a risograph silhouette print). If the user only says「把这张照片做成插画」without style, ask.
+> **Photo → illustration:** 「帮我把这张图改成超现实主义风格」→ `surgepix-generate-restaged-cinematic` (conceptual restage: metaphor + color-field set + surreal device — **not** flatten the backdrop). 「改成极简诗意风格」/「极简线条」/「视觉记忆面板」→ `surgepix-generate-photo-poetic-editorial` (**ivory abstract panel only** — **not** a photo-plus-panel diptych, **not** a full-frame restyle). If the user only says「把这张照片做成插画」without style, ask.
 
 ## Language consistency
 

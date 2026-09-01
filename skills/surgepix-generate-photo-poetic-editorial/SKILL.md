@@ -6,7 +6,7 @@ description: >-
 
 # SurgePix Generate Photo Poetic Editorial
 
-Turn **1–5 reference photos** into a **minimalist poetic editorial** illustration — a small geometric line poster on large beige negative space, not a risograph silhouette print. Style is locked by the server; `--prompt` supplies the **scene-specific line reduction**. The script prepends a fixed line-poster floor. Local reference paths are uploaded automatically (backend accepts HTTPS URLs only).
+Turn **1–5 reference photos** into **only the ivory abstract memory panel** (small motif, poetic English title). The photo is a reference, not part of the output — no photo-on-top diptych, no full-frame restyle, no risograph print. Style is locked by the server; `--prompt` supplies **scene-specific spatial facts**. The script prepends a panel-only floor. Local reference paths are uploaded automatically (backend accepts HTTPS URLs only).
 
 ## Language consistency
 
@@ -40,31 +40,29 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 ## How to write `--prompt`
 
-`--prompt` is the **line reduction into a geometric editorial poster**, not a vintage print of the photo.
+`--prompt` lists **spatial facts from this photo**. The output is **only the ivory abstract panel**.
 
-When the user only says「改成极简诗意」/「极简线条」and gives a photo, **look at the photo** and write which shapes remain. Do **not** pass that sentence through unchanged.
+**Do not put the source photo in the picture.** No upper-photo / lower-panel split.
 
-**Required recipe (all of these):**
+When the user only says「改成极简诗意」/「极简线条」/「视觉记忆面板」, still run this skill. Write 3–6 facts from the photo; do **not** pass only that slogan.
 
-1. Large **beige / cream canvas**. The graphic is small and centered (or floating), with lots of negative space.
-2. Objects become **flat geometry**: balloons = unpatterned solid circles; building = faint windowless blocks; people = tiny dots/blobs.
-3. **Line work = one clean horizontal** for a bridge/rail (sparse notches OK). That single line is the 线条感.
-4. Optional: a row of 3–4 **color chips** + two lines of tiny serif caption.
-5. Strictly flat. No grain.
+**Required recipe:**
 
-**Forbidden (this is 图2 — wrong):**
+1. Say explicitly: panel only; the photograph must not appear.
+2. Distill **relationships** (direction, interval, overlap, rhythm, color roles), not a miniature of the scene.
+3. People = short vertical marks (head fused to body). Rail / horizon = one or two thin horizontals. Organic clusters (balloons, canopy) = overlapping soft flats, no inner patterns.
+4. Ivory ground, small motif, lots of whitespace. One original English title of 2–5 words (optional short subtitle) in a restrained serif.
+5. No color chips, legends, dates, logos, paper grain, ukiyo-e, or full-body silhouettes.
 
-- Risograph / ukiyo-e / screen-print grain, cream-matted landscape
-- Full navy silhouettes, photographer pose, dense vertical railing
-- Character/striped balloons, building window grid, sky filling the frame
+**Forbidden:** photo-plus-panel diptych; restyling the whole photo; risograph landscape.
 
 **Worked example** — photo: balloon cluster on a bridge, people, a building:
 
 ```
-大面积米色留白，图形偏小居中。气球是几个叠在一起的纯色圆，不要笑脸和条纹。桥只画一条细横线，人是线上几个小色点。楼是浅淡无窗矩形。右上放一排小色卡，左下两行小衬线标题。平涂，不要纸纹，不要全身剪影，不要套色印刷。
+只要象牙色抽象面板，不要原片。提炼：左侧气球团=重叠柔和色块；栏杆=一条细水平线；人群=短竖色块节奏；右侧楼=简化体量。2–5词英文衬线标题。不要拼接照片，不要套色印刷，不要色卡。
 ```
 
-If the user already describes the reduction, use their wording and still cover the recipe slots they omitted. Do **not** try to override the locked poetic style (no “换成超现实/水彩”). The script prepends a line-poster floor — do not duplicate `【线条方向】` / `[Line direction]`.
+If the user already describes the panel, keep their wording and fill omitted slots. Do **not** try to override the locked poetic style (no “换成超现实/水彩”). The script prepends a panel-only floor — do not duplicate `【面板方向】` / `[Panel direction]`.
 
 ## Prerequisites
 
@@ -108,7 +106,7 @@ Script path: `<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/gene
 ```bash
 node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_photo_poetic_editorial.mjs" \
   --reference ./photo.png \
-  --prompt "米色大留白；气球纯色圆无图案；一条细横线加人是小色点；楼是浅淡无窗块；小色卡加小衬线标题；不要剪影印刷" \
+  --prompt "只要象牙色面板不要原片；气球团、细栏杆线、短竖人群、简化楼体；2-5词英文标题" \
   --size 1024x1024
 # {"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 # `<DOWNLOAD_URL>` 仅为文档占位；真实 HTTPS 下载地址以脚本 stdout 为准。
@@ -118,7 +116,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 ```bash
 node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_photo_poetic_editorial.mjs" \
   --reference <IMAGE_URL> \
-  --prompt "Large beige negative space; balloons as unpatterned solid circles; one thin rail line with dot people; faint windowless blocks; color chips and tiny serif caption; no silhouette print" \
+  --prompt "Ivory panel only, no source photo; balloon cluster, one thin rail, short vertical people, simplified building mass; 2-5 word English serif title" \
   --size 1024x1024
 ```
 
@@ -148,7 +146,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 ### Step 1: Collect inputs
 
 - **Required:** 1–5 `--reference` (local path or URL; repeatable). More than 5 is rejected client-side (no silent truncate).
-- **Required:** scene-specific line reduction → `--prompt` (match user language; follow **How to write `--prompt`**). **Do not** pass only「极简诗意」. **Do not** try to override the locked poetic style.
+- **Required:** scene-specific spatial facts for the panel → `--prompt` (match user language; follow **How to write `--prompt`**). **Do not** pass only「极简诗意」. **Do not** try to override the locked poetic style.
 - **Required:** output size → `--size WxH` (maps to API `[width, height]`). If the user omitted size, use **`1024x1024`**.
 - **Optional:** `--session-id`, `--nowait`
 
@@ -177,7 +175,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `--prompt` | Yes | — | Scene-specific geometric line poster (circles + one rail line + dot people + beige negative space). Script prepends a line-poster floor. Cannot override server-locked poetic style |
+| `--prompt` | Yes | — | Spatial facts for the ivory panel only (source photo must not appear). Script prepends a panel-only floor. Cannot override server-locked poetic style |
 | `--size` | Yes | — | Target size as `WxH` (e.g. `1024x1024`) → API `[width, height]`. Suggest `1024x1024` if user omitted it |
 | `--reference` | Yes (1–5) | — | Reference image path or URL (repeatable; local path auto-uploaded) |
 | `--session-id` | No | auto | Reuse session on iteration |
@@ -189,7 +187,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 
 - Backend accepts **URL-only** references; **never** pass local paths in the API body — the script uploads them.
 - Calls `POST /tasks/generate-photo-poetic-editorial` (backend task API), not `/skills/*`.
-- `--prompt` is the scene-specific line reduction. The poetic look is locked server-side; the script prepends a line-poster floor so a thin slogan does not collapse into a risograph silhouette print.
+- `--prompt` lists spatial facts for the ivory panel. The poetic look is locked server-side; the script prepends a panel-only floor so the source photo is not composited into the result.
 - `--reference` count must be 1–5; extra images are rejected, not truncated.
 - Result is a **single PNG** (not a ZIP).
 - Download links may expire; tell the user to save promptly.
