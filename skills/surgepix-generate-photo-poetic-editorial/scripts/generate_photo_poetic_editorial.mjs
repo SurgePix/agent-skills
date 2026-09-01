@@ -94,20 +94,20 @@ async function resolveReference(ref) {
 }
 
 const LINE_PREFIX_ZH = [
-  "【线条方向】把参考照片收成极简线条图形海报，突出粗而少的干净线条，不要做带纹理的细致插画。",
-  "所有物体压成几何原语：圆、矩形、短横线、无五官的小色块人影。气球=纯色圆；建筑=无窗无纹理的色块剪影；栏杆=一条粗横线加极少短竖刻，禁止密排细线。",
-  "严格平涂矢量：无渐变、无纸纹/颗粒、无花纹条纹、无建筑线稿细节。",
-  "构图像标志：图形小而居中，四周大面积纯色留白（米色/浅底），主体不要铺满画面。",
-  "有限低饱和复古色板。人物必须是微小无细节色点，禁止画出头肩相机等复杂剪影。",
+  "【线条方向】把参考照片做成复古套色印刷（risograph/丝网/浮世绘海报），突出线条结构与剪影，不要做成色点拼成的极简 logo 海报。",
+  "人物必须是完整深色剪影，保留可辨姿势（举气球、举相机、倚栏），禁止收成小色点或墨点。",
+  "栏杆是贯穿画面的水平线，加上有节奏的竖栏——这就是线条感；不要收成一根细横线。",
+  "天空用大面积浅色铺底，场景贴在画面下三分之一横构图；奶油色卡纸留边。允许纸纹颗粒与套色叠印，禁止水彩晕边。",
+  "气球保持一团、可有少量图案；建筑可简化窗格。禁止四宫格色卡、禁止英文标题如 A Bright Interlude、禁止把画面收成居中小图标。",
   "【场景补充】",
 ].join("");
 
 const LINE_PREFIX_EN = [
-  "[Line direction] Reduce the reference to a minimalist line-art poster: few bold clean strokes, not a detailed textured illustration. ",
-  "Collapse every object into geometric primitives — circles, rectangles, short ticks, tiny featureless blobs for people. Balloons = solid circles; buildings = flat windowless silhouettes; a railing = one thick bar plus sparse notches, never dense thin lines. ",
-  "Strictly flat vector: no gradients, paper grain, patterns, stripes, or architectural line-work. ",
-  "Logo-like composition: a small graphic centered on a large solid canvas with generous negative space; do not fill the frame. ",
-  "Limited muted vintage palette. People must be tiny blobs, not complex silhouettes with cameras or clothing. ",
+  "[Line direction] Restyle the reference as a vintage risograph / screen-print / ukiyo-e poster: silhouettes and linear structure, not a blob-logo on cream paper. ",
+  "People must be full dark silhouettes with readable poses (holding balloons, raising a camera, leaning on the rail) — never tiny dots. ",
+  "The railing is a strong horizontal spanning the frame plus rhythmic vertical bars; that is the line work. Do not collapse it to one thin stroke. ",
+  "A large pale sky, scene anchored in the lower third, cream paper margin. Grain and ink-overlap are wanted; watercolor blobs are not. ",
+  "Keep the balloon cluster (simple graphic marks OK) and a simplified building with a window grid. No color-chip swatches, no captions like “A Bright Interlude”, no tiny centered icon. ",
   "[Scene notes] ",
 ].join("");
 
@@ -118,7 +118,7 @@ function isMostlyChinese(text) {
   return cjk / chars.length >= 0.2;
 }
 
-/** 为用户 prompt 垫一层极简线条方向，避免画得过细过满。已带标记则不重复拼接。 */
+/** 为用户 prompt 垫一层印刷剪影/线条方向，避免收成色点 logo 海报。已带标记则不重复拼接。 */
 function composeLinePrompt(userPrompt) {
   const trimmed = String(userPrompt ?? "").trim();
   if (!trimmed) return trimmed;
@@ -212,7 +212,7 @@ function printHelp() {
   console.error("         --reference <path-or-url> [--reference ...] \\");
   console.error("         [--session-id <id>] [--nowait <true|false>]");
   console.error("");
-  console.error("  --prompt <text>           场景说明（必填；脚本会垫一层极简线条方向，不能覆盖服务端固定风格）");
+  console.error("  --prompt <text>           场景说明（必填；脚本会垫一层印刷剪影/线条方向，不能覆盖服务端固定风格）");
   console.error("  --size <WxH>              目标宽高，例如 1024x1024（必填）");
   console.error("  --reference <path-or-url> 参考图（必填 1–5 张，可重复；本地路径自动上传）");
   console.error("  --session-id <id>         会话 ID，迭代调整时传入");
