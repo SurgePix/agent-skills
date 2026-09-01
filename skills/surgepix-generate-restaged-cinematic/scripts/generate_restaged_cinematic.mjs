@@ -93,6 +93,44 @@ async function resolveReference(ref) {
   return result.url;
 }
 
+const ARTISTIC_PREFIX_ZH = [
+  "【重构方向】把参考照片重构成受控超现实电影化舞台的概念作品，不要做「换背景的简化照片」。",
+  "保留主体可识别身份与标志色，但禁止原样拼贴。把日常道具或动作改写成一个视觉隐喻。",
+  "环境用大面积高饱和几何色场：整面纯色墙，加一条高对比的窄门/色缝/色块；删除写实建筑、街道杂物与自然光写实感。",
+  "加入至少一处超现实装置：异常巨大的剪影、尺度错位、发光门洞，或把物体当成巨型画笔去涂地面/墙面。",
+  "戏剧硬光、干净地面、原色强对比、图形化构图，像概念艺术摄影与舞台装置。",
+  "禁止只把背景涂平、人物与车辆姿势原样保留；禁止普通插画涂鸦风。",
+  "【场景补充】",
+].join("");
+
+const ARTISTIC_PREFIX_EN = [
+  "[Restage direction] Reconstruct the reference as a controlled surreal cinematic stage — conceptual art, not a photo with a flattened backdrop. ",
+  "Keep the subject's recognizable identity and signature colors, but do not collage them unchanged. Rewrite everyday props or actions as one visual metaphor. ",
+  "Build the set from large saturated geometric color fields: a solid wall plus one high-contrast slit, portal, or block; strip realistic architecture, street clutter, and documentary daylight. ",
+  "Add at least one surreal device: an oversized silhouette, a scale shift, a glowing doorway, or an object used as a giant paint tool on the ground or wall. ",
+  "Hard theatrical light, clean ground, primary-color contrast, graphic composition — like conceptual art photography and a stage installation. ",
+  "Do not merely flood the background with a flat color while keeping poses. No casual illustration or doodle look. ",
+  "[Scene notes] ",
+].join("");
+
+function isMostlyChinese(text) {
+  const chars = String(text).replace(/\s/g, "");
+  if (!chars) return true;
+  const cjk = chars.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
+  return cjk / chars.length >= 0.2;
+}
+
+/** 为用户 prompt 垫一层艺术重构方向，避免只把背景涂平。已带标记则不重复拼接。 */
+function composeArtisticPrompt(userPrompt) {
+  const trimmed = String(userPrompt ?? "").trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.includes("【重构方向】") || trimmed.includes("[Restage direction]")) {
+    return trimmed;
+  }
+  const prefix = isMostlyChinese(trimmed) ? ARTISTIC_PREFIX_ZH : ARTISTIC_PREFIX_EN;
+  return `${prefix}${trimmed}`;
+}
+
 /** @param {string} raw @returns {[number, number]} */
 function parseSize(raw) {
   const m = /^(\d+)x(\d+)$/i.exec(String(raw).trim());
@@ -176,7 +214,7 @@ function printHelp() {
   console.error("         --reference <path-or-url> [--reference ...] \\");
   console.error("         [--session-id <id>] [--nowait <true|false>]");
   console.error("");
-  console.error("  --prompt <text>           内容/构图补充（必填；不能覆盖服务端固定电影化风格）");
+  console.error("  --prompt <text>           场景重构说明（必填；脚本会垫一层艺术重构方向，不能覆盖服务端固定风格）");
   console.error("  --size <WxH>              目标宽高，例如 1536x1024（必填）");
   console.error("  --reference <path-or-url> 参考图（必填 1–5 张，可重复；本地路径自动上传）");
   console.error("  --session-id <id>         会话 ID，迭代调整时传入");
@@ -263,7 +301,7 @@ async function main() {
 
     const data = await generateRestagedCinematic({
       reference: resolvedRefs,
-      prompt: trimmedPrompt,
+      prompt: composeArtisticPrompt(trimmedPrompt),
       size: sizePair,
       sessionId,
     });
@@ -293,4 +331,4 @@ if (isMain) {
   main();
 }
 
-export { generateRestagedCinematic, pollUntilDone, resolveReference, parseSize };
+export { generateRestagedCinematic, pollUntilDone, resolveReference, parseSize, composeArtisticPrompt };
