@@ -1,12 +1,12 @@
 ---
 name: surgepix-generate-photo-poetic-editorial
 description: >-
-  Restyle 1–5 reference photos into minimalist poetic editorial illustrations via SurgePix (server-locked style). Prefer this over surgepix-image-edit when the user says 极简诗意风格, 诗意风格, 改成极简诗意, 帮我把这张图改成极简诗意风格, 极简诗意编辑插画, 极简抽象插画, 视觉记忆面板, 极简档案海报, 摄影诗意编辑, or "poetic editorial". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), cinematic restaging (surgepix-generate-restaged-cinematic), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without naming 诗意/超现实, ask first. 「极简诗意风格」is an explicit style — call this skill, do not ask and do not use image-edit.
+  Restyle 1–5 reference photos into minimalist poetic editorial illustrations via SurgePix (server-locked style). Prefer this over surgepix-image-edit when the user says 极简诗意风格, 极简线条, 诗意风格, 改成极简诗意, 帮我把这张图改成极简诗意风格, 极简诗意编辑插画, 极简抽象插画, 视觉记忆面板, 极简档案海报, 摄影诗意编辑, or "poetic editorial". Language: write --prompt in the user's conversation language. Output rule: show ONLY the download URL from script stdout verbatim in a code block; NEVER fabricate or retype URLs. Local reference paths are uploaded first — API accepts URLs only. Do NOT use for general image edit (surgepix-image-edit), cinematic restaging (surgepix-generate-restaged-cinematic), or topic-based article illustrations (surgepix-generate-illustrations). If the user only says 把照片做成插画 without naming 诗意/超现实, ask first. 「极简诗意风格」is an explicit style — call this skill, do not ask and do not use image-edit.
 ---
 
 # SurgePix Generate Photo Poetic Editorial
 
-Turn **1–5 reference photos** into a **minimalist poetic editorial** illustration. Style is locked by the server; `--prompt` only adds content, composition, or on-image text. Local reference paths are uploaded automatically (backend accepts HTTPS URLs only).
+Turn **1–5 reference photos** into a **minimalist poetic editorial** illustration — bold-line geometric poster, not a detailed sketch. Style is locked by the server; `--prompt` supplies the **scene-specific line reduction**. The script prepends a fixed line-art floor. Local reference paths are uploaded automatically (backend accepts HTTPS URLs only).
 
 ## Language consistency
 
@@ -24,7 +24,7 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 | Use this skill | Use something else |
 |----------------|-------------------|
-| 极简诗意风格 / 诗意风格 / 改成极简诗意 / 极简诗意 / 极简抽象 / 视觉记忆面板 / 摄影诗意编辑 | **surgepix-generate-restaged-cinematic** for 超现实主义风格 / 电影化舞台 / 色场 |
+| 极简诗意风格 / 极简线条 / 诗意风格 / 改成极简诗意 / 极简诗意 / 极简抽象 / 视觉记忆面板 / 摄影诗意编辑 | **surgepix-generate-restaged-cinematic** for 超现实主义风格 / 电影化舞台 / 色场 |
 | Reference photos restyled into locked poetic editorial | **surgepix-image-edit** for general 改图/重绘 **without** 诗意 or 超现实 |
 | Photo → illustration | **surgepix-generate-illustrations** for 公众号/博客 topic 配图 (no required photo) |
 
@@ -35,8 +35,37 @@ Match the **user's conversation language** for `--prompt` — unless the user ex
 
 ## When to use
 
-- User says "极简诗意风格", "诗意风格", "改成极简诗意", "帮我把这张图改成极简诗意风格", "极简诗意编辑插画", "极简抽象", "视觉记忆面板", "极简档案海报", "摄影诗意编辑", "poetic editorial"
+- User says "极简诗意风格", "极简线条", "诗意风格", "改成极简诗意", "帮我把这张图改成极简诗意风格", "极简诗意编辑插画", "极简抽象", "视觉记忆面板", "极简档案海报", "摄影诗意编辑", "poetic editorial"
 - User provides 1–5 photos and wants them restyled into a quiet, minimal editorial illustration
+
+## How to write `--prompt`
+
+`--prompt` is the **line reduction**, not a style slogan and not “keep the photo, draw it neatly”.
+
+When the user only says「改成极简诗意」/「极简线条」and gives a photo, **look at the photo** and write which shapes remain. Do **not** pass that sentence through unchanged.
+
+**Required recipe (all of these):**
+
+1. Reduce every object to **geometric primitives** (circles, rectangles, a few thick bars). Name what each thing becomes.
+2. **Bold, thick, few strokes** — one line for a railing, not a fence of thin marks.
+3. **Strictly flat**: no grain, paper texture, gradients, stripes, windows, or patterned fill.
+4. **Logo-like scale**: small graphic centered on a large solid canvas; lots of negative space; do not fill the frame.
+5. People = tiny featureless blobs. Limited muted palette.
+
+**Forbidden (this is the usual failure):**
+
+- Keeping architectural windows, striped balloons, camera-holding silhouettes
+- Dense thin railing lines and paper grain
+- Letting the scene occupy most of the canvas
+- Passing only「极简诗意」/ “make it minimal line art”
+
+**Worked example** — photo: people on a bridge, a bunch of balloons, a building behind:
+
+```
+把场景收成居中的小图形，四周大面积米色留白。气球压成几个大小不等的纯色圆，不要条纹和笑脸。桥面是一条粗横线，栏杆只留稀疏短竖刻。楼是无窗无纹理的扁矩形色块。人是几个微小黑色色点，不要头肩和相机。平涂矢量、粗线条、低饱和色。不要纸纹，不要铺满画面。
+```
+
+If the user already describes the reduction, use their wording and still cover the recipe slots they omitted. Do **not** try to override the locked poetic style (no “换成超现实/水彩”). The script prepends a line-art floor — do not duplicate `【线条方向】` / `[Line direction]`.
 
 ## Prerequisites
 
@@ -80,7 +109,7 @@ Script path: `<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/gene
 ```bash
 node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_photo_poetic_editorial.mjs" \
   --reference ./photo.png \
-  --prompt "保留两人的站位，把季节改成冬天" \
+  --prompt "气球压成纯色圆；桥是一条粗横线加稀疏短刻；楼是无窗色块；人是微小色点；大留白居中，不要纸纹和密线" \
   --size 1024x1024
 # {"ok":true,"taskId":"task_xxx","sessionId":123,"progress":"succeeded","download":"<DOWNLOAD_URL>"}
 # `<DOWNLOAD_URL>` 仅为文档占位；真实 HTTPS 下载地址以脚本 stdout 为准。
@@ -90,7 +119,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 ```bash
 node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_photo_poetic_editorial.mjs" \
   --reference <IMAGE_URL> \
-  --prompt "Keep the two figures, change the season to winter" \
+  --prompt "Balloons as solid circles; bridge as one thick bar with sparse notches; building as a windowless block; people as tiny blobs; small graphic, large beige negative space, no grain" \
   --size 1024x1024
 ```
 
@@ -120,7 +149,7 @@ node "<skills-dir>/surgepix-setup/scripts/check_env.mjs"
 ### Step 1: Collect inputs
 
 - **Required:** 1–5 `--reference` (local path or URL; repeatable). More than 5 is rejected client-side (no silent truncate).
-- **Required:** content/composition supplement → `--prompt` (match user language). **Do not** try to override the locked poetic style in the prompt.
+- **Required:** scene-specific line reduction → `--prompt` (match user language; follow **How to write `--prompt`**). **Do not** pass only「极简诗意」. **Do not** try to override the locked poetic style.
 - **Required:** output size → `--size WxH` (maps to API `[width, height]`). If the user omitted size, use **`1024x1024`**.
 - **Optional:** `--session-id`, `--nowait`
 
@@ -149,7 +178,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `--prompt` | Yes | — | Content / composition only; cannot override server-locked poetic style |
+| `--prompt` | Yes | — | Scene-specific line reduction (primitives + bold few strokes + flat fill + large negative space). Script prepends a line-art floor. Cannot override server-locked poetic style |
 | `--size` | Yes | — | Target size as `WxH` (e.g. `1024x1024`) → API `[width, height]`. Suggest `1024x1024` if user omitted it |
 | `--reference` | Yes (1–5) | — | Reference image path or URL (repeatable; local path auto-uploaded) |
 | `--session-id` | No | auto | Reuse session on iteration |
@@ -161,7 +190,7 @@ node "<skills-dir>/surgepix-generate-photo-poetic-editorial/scripts/generate_pho
 
 - Backend accepts **URL-only** references; **never** pass local paths in the API body — the script uploads them.
 - Calls `POST /tasks/generate-photo-poetic-editorial` (backend task API), not `/skills/*`.
-- `--prompt` is a content/composition supplement. The poetic editorial look is locked server-side.
+- `--prompt` is the scene-specific line reduction. The poetic look is locked server-side; the script still prepends a line-art floor so a thin slogan does not collapse into a busy, grainy, detailed drawing.
 - `--reference` count must be 1–5; extra images are rejected, not truncated.
 - Result is a **single PNG** (not a ZIP).
 - Download links may expire; tell the user to save promptly.

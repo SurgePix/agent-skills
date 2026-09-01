@@ -93,6 +93,42 @@ async function resolveReference(ref) {
   return result.url;
 }
 
+const LINE_PREFIX_ZH = [
+  "【线条方向】把参考照片收成极简线条图形海报，突出粗而少的干净线条，不要做带纹理的细致插画。",
+  "所有物体压成几何原语：圆、矩形、短横线、无五官的小色块人影。气球=纯色圆；建筑=无窗无纹理的色块剪影；栏杆=一条粗横线加极少短竖刻，禁止密排细线。",
+  "严格平涂矢量：无渐变、无纸纹/颗粒、无花纹条纹、无建筑线稿细节。",
+  "构图像标志：图形小而居中，四周大面积纯色留白（米色/浅底），主体不要铺满画面。",
+  "有限低饱和复古色板。人物必须是微小无细节色点，禁止画出头肩相机等复杂剪影。",
+  "【场景补充】",
+].join("");
+
+const LINE_PREFIX_EN = [
+  "[Line direction] Reduce the reference to a minimalist line-art poster: few bold clean strokes, not a detailed textured illustration. ",
+  "Collapse every object into geometric primitives — circles, rectangles, short ticks, tiny featureless blobs for people. Balloons = solid circles; buildings = flat windowless silhouettes; a railing = one thick bar plus sparse notches, never dense thin lines. ",
+  "Strictly flat vector: no gradients, paper grain, patterns, stripes, or architectural line-work. ",
+  "Logo-like composition: a small graphic centered on a large solid canvas with generous negative space; do not fill the frame. ",
+  "Limited muted vintage palette. People must be tiny blobs, not complex silhouettes with cameras or clothing. ",
+  "[Scene notes] ",
+].join("");
+
+function isMostlyChinese(text) {
+  const chars = String(text).replace(/\s/g, "");
+  if (!chars) return true;
+  const cjk = chars.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
+  return cjk / chars.length >= 0.2;
+}
+
+/** 为用户 prompt 垫一层极简线条方向，避免画得过细过满。已带标记则不重复拼接。 */
+function composeLinePrompt(userPrompt) {
+  const trimmed = String(userPrompt ?? "").trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.includes("【线条方向】") || trimmed.includes("[Line direction]")) {
+    return trimmed;
+  }
+  const prefix = isMostlyChinese(trimmed) ? LINE_PREFIX_ZH : LINE_PREFIX_EN;
+  return `${prefix}${trimmed}`;
+}
+
 /** @param {string} raw @returns {[number, number]} */
 function parseSize(raw) {
   const m = /^(\d+)x(\d+)$/i.exec(String(raw).trim());
@@ -176,7 +212,7 @@ function printHelp() {
   console.error("         --reference <path-or-url> [--reference ...] \\");
   console.error("         [--session-id <id>] [--nowait <true|false>]");
   console.error("");
-  console.error("  --prompt <text>           内容/构图补充（必填；不能覆盖服务端固定诗意风格）");
+  console.error("  --prompt <text>           场景说明（必填；脚本会垫一层极简线条方向，不能覆盖服务端固定风格）");
   console.error("  --size <WxH>              目标宽高，例如 1024x1024（必填）");
   console.error("  --reference <path-or-url> 参考图（必填 1–5 张，可重复；本地路径自动上传）");
   console.error("  --session-id <id>         会话 ID，迭代调整时传入");
@@ -263,7 +299,7 @@ async function main() {
 
     const data = await generatePhotoPoeticEditorial({
       reference: resolvedRefs,
-      prompt: trimmedPrompt,
+      prompt: composeLinePrompt(trimmedPrompt),
       size: sizePair,
       sessionId,
     });
@@ -293,4 +329,4 @@ if (isMain) {
   main();
 }
 
-export { generatePhotoPoeticEditorial, pollUntilDone, resolveReference, parseSize };
+export { generatePhotoPoeticEditorial, pollUntilDone, resolveReference, parseSize, composeLinePrompt };
