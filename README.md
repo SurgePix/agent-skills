@@ -6,45 +6,80 @@ This repository contains the official SurgePix Agent Skills for AI coding enviro
 
 **Prefer a UI?** Every skill also runs in your browser — no setup — at **[surgepix.ai/skills](https://surgepix.ai/skills)**. Building an agent? See **[surgepix.ai/for-agents](https://surgepix.ai/for-agents)**.
 
-<!-- Illustrative capabilities banner (.github/assets/examples.svg). Swap for real product screenshots when ready. -->
-![What SurgePix agent skills produce — background removal, AI presentations, image translation, inpainting, and Xiaohongshu carousels](.github/assets/examples.svg)
+<!-- Capabilities banner: real skill outputs (.github/assets/examples.jpg). Click → surgepix.ai/skills -->
+[![What SurgePix agent skills produce — background removal, AI presentations, image translation, inpainting, logos, posters, storyboards, cinematic restage and more](.github/assets/examples.jpg)](https://surgepix.ai/skills?utm_source=github&utm_medium=readme&utm_campaign=skill_examples)
 
 ## Examples — what each skill makes
 
-<!-- TODO(maintainer): drop real output screenshots at the 6 .github/assets/ex-*.png paths below (specs in the PR description). Until then these render as broken images. -->
+Each of these was produced with a **single short skill call** — no giant prompt. The style, layout, and polish live inside the skill; your agent just says what it wants and gets a finished file back. The captions show the gist of each call.
+
 <table>
   <tr>
     <td width="33%" align="center" valign="top">
-      <img src=".github/assets/ex-remove-background.jpg" width="240" alt="Background removal — subject on a transparent checkerboard"><br>
+      <a href="https://surgepix.ai/skills/remove-background?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-remove-background.jpg" width="240" alt="Background removal — subject on a transparent checkerboard"></a><br>
       <b>Background Remover</b><br>
       <sub><code>photo.jpg</code> → clean transparent PNG, hair kept</sub>
     </td>
     <td width="33%" align="center" valign="top">
-      <img src=".github/assets/ex-presentation.jpg" width="240" alt="Generated, editable presentation deck"><br>
+      <a href="https://surgepix.ai/skills/generate-presentation?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-presentation.jpg" width="240" alt="Generated, editable presentation deck"></a><br>
       <b>Presentation</b><br>
       <sub><code>"a seed pitch deck, 12 slides"</code> → editable <code>.pptx</code></sub>
     </td>
     <td width="33%" align="center" valign="top">
-      <img src=".github/assets/ex-image-translate.jpg" width="240" alt="An image with its text translated in place"><br>
+      <a href="https://surgepix.ai/skills/image-translate?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-image-translate.jpg" width="240" alt="An image with its text translated in place"></a><br>
       <b>Image Translator</b><br>
       <sub><code>menu.jpg --language ja</code> → text translated in place (EN → 日本語)</sub>
     </td>
   </tr>
   <tr>
     <td align="center" valign="top">
-      <img src=".github/assets/ex-inpaint.jpg" width="240" alt="Inpainting — one region changed, the rest identical"><br>
+      <a href="https://surgepix.ai/skills/image-Editing?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-inpaint.jpg" width="240" alt="Inpainting — one region changed, the rest identical"></a><br>
       <b>AI Inpainting</b><br>
       <sub><code>--prompt "make the awning blue"</code> → only that region changes</sub>
     </td>
     <td align="center" valign="top">
-      <img src=".github/assets/ex-xhs.jpg" width="240" alt="Xiaohongshu vertical carousel set"><br>
+      <a href="https://surgepix.ai/skills/generate-xhs?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-xhs.jpg" width="240" alt="Xiaohongshu vertical carousel set"></a><br>
       <b>Xiaohongshu Carousel</b><br>
       <sub><code>"Dolomites hiking guide"</code> → cover + content carousel</sub>
     </td>
     <td align="center" valign="top">
-      <img src=".github/assets/ex-poster.jpg" width="240" alt="Generated event poster"><br>
+      <a href="https://surgepix.ai/skills/generate-event-poster?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-poster.jpg" width="240" alt="Generated event poster"></a><br>
       <b>Poster</b><br>
       <sub><code>"artisan bakery promo"</code> → finished poster PNG</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/generate-brand-logo?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-logo.jpg" width="240" alt="A grid of generated logo concepts"></a><br>
+      <b>Logo</b><br>
+      <sub><code>"brand name + vibe"</code> → logo concepts</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/generate-illustrations?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-illustrations.jpg" width="240" alt="A 16:9 watercolor article illustration"></a><br>
+      <b>Article Illustration</b><br>
+      <sub><code>"article on AI slides"</code> → 16:9 editorial illustration</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/generate-film-storyboards?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-storyboard.jpg" width="240" alt="An 8-panel pencil storyboard"></a><br>
+      <b>Storyboard</b><br>
+      <sub><code>"a train-platform goodbye"</code> → 8-shot storyboard</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/generate-photo-poetic?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-poetic.jpg" width="240" alt="A photo restyled into a minimalist poetic editorial panel"></a><br>
+      <b>Poetic Editorial</b><br>
+      <sub><code>photo</code> → minimalist ivory panel</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/generate-restaged-cinematic?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-cinematic.jpg" width="240" alt="A photo restaged into a surreal cinematic scene"></a><br>
+      <b>Cinematic Restage</b><br>
+      <sub><code>photo</code> → surreal color-field restage</sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="https://surgepix.ai/skills/ppt-translator?utm_source=github&utm_medium=readme&utm_campaign=skill_examples"><img src=".github/assets/ex-ppt-translate.jpg" width="240" alt="A deck translated from English to Spanish, layout kept"></a><br>
+      <b>PPT Translator</b><br>
+      <sub><code>deck.pptx --language es</code> → translated, layout kept</sub>
     </td>
   </tr>
 </table>
